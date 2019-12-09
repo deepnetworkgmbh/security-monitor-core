@@ -3,9 +3,9 @@ package validator
 import (
 	"testing"
 
-	conf "github.com/fairwindsops/polaris/pkg/config"
-	"github.com/fairwindsops/polaris/pkg/kube"
-	"github.com/fairwindsops/polaris/test"
+	conf "github.com/deepnetworkgmbh/security-monitor-core/pkg/config"
+	"github.com/deepnetworkgmbh/security-monitor-core/pkg/kube"
+	"github.com/deepnetworkgmbh/security-monitor-core/test"
 	"github.com/stretchr/testify/assert"
 )
 

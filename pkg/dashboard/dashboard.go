@@ -17,7 +17,7 @@ package dashboard
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/fairwindsops/polaris/pkg/scanner"
+	"github.com/deepnetworkgmbh/security-monitor-core/pkg/scanner"
 	"html/template"
 	"net/http"
 	"net/url"
@@ -25,9 +25,9 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/fairwindsops/polaris/pkg/config"
-	"github.com/fairwindsops/polaris/pkg/kube"
-	"github.com/fairwindsops/polaris/pkg/validator"
+	"github.com/deepnetworkgmbh/security-monitor-core/pkg/config"
+	"github.com/deepnetworkgmbh/security-monitor-core/pkg/kube"
+	"github.com/deepnetworkgmbh/security-monitor-core/pkg/validator"
 	packr "github.com/gobuffalo/packr/v2"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"

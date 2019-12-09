@@ -23,9 +23,9 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/fairwindsops/polaris/pkg/config"
-	conf "github.com/fairwindsops/polaris/pkg/config"
-	"github.com/fairwindsops/polaris/pkg/scanner"
+	"github.com/deepnetworkgmbh/security-monitor-core/pkg/config"
+	conf "github.com/deepnetworkgmbh/security-monitor-core/pkg/config"
+	"github.com/deepnetworkgmbh/security-monitor-core/pkg/scanner"
 	corev1 "k8s.io/api/core/v1"
 	apiMachineryYAML "k8s.io/apimachinery/pkg/util/yaml"
 )

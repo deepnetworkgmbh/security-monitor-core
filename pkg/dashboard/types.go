@@ -1,8 +1,8 @@
 package dashboard
 
 import (
-	"github.com/fairwindsops/polaris/pkg/config"
-	"github.com/fairwindsops/polaris/pkg/validator"
+	"github.com/deepnetworkgmbh/security-monitor-core/pkg/config"
+	"github.com/deepnetworkgmbh/security-monitor-core/pkg/validator"
 	"html/template"
 	"strings"
 )

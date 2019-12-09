@@ -3,9 +3,9 @@ package validator
 import (
 	"time"
 
-	conf "github.com/fairwindsops/polaris/pkg/config"
-	"github.com/fairwindsops/polaris/pkg/kube"
-	"github.com/fairwindsops/polaris/pkg/scanner"
+	conf "github.com/deepnetworkgmbh/security-monitor-core/pkg/config"
+	"github.com/deepnetworkgmbh/security-monitor-core/pkg/kube"
+	"github.com/deepnetworkgmbh/security-monitor-core/pkg/scanner"
 )
 
 // RunAudit runs a full Polaris audit and returns an AuditData object
