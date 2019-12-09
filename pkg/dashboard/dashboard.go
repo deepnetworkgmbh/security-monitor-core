@@ -17,7 +17,7 @@ package dashboard
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/deepnetworkgmbh/security-monitor-core/pkg/scanner"
+	"github.com/deepnetworkgmbh/security-monitor-core/pkg/scanners"
 	"html/template"
 	"net/http"
 	"net/url"
@@ -26,8 +26,6 @@ import (
 	"strings"
 
 	"github.com/deepnetworkgmbh/security-monitor-core/pkg/config"
-	"github.com/deepnetworkgmbh/security-monitor-core/pkg/kube"
-	"github.com/deepnetworkgmbh/security-monitor-core/pkg/validator"
 	packr "github.com/gobuffalo/packr/v2"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
@@ -137,22 +135,10 @@ func writeTemplate(tmpl *template.Template, data *templateData, w http.ResponseW
 	buf.WriteTo(w)
 }
 
-func getConfigForQuery(base config.Configuration, query url.Values) config.Configuration {
-	c := base
-	exemptions := query.Get("disallowExemptions")
-	if exemptions == "false" {
-		c.DisallowExemptions = false
-	}
-	if exemptions == "true" {
-		c.DisallowExemptions = true
-	}
-	return c
-}
-
 // GetRouter returns a mux router serving all routes necessary for the dashboard
 func GetRouter(c config.Configuration, port int, basePath string) *mux.Router {
 	router := mux.NewRouter().PathPrefix(basePath).Subrouter()
-	kubeScanner := scanner.NewScanner(c.Images.ScannerUrl)
+	kubeScanner := scanners.NewScanners(c.Services.ScannersUrl)
 	fileServer := http.FileServer(GetAssetBox())
 
 	router.PathPrefix("/static/").Handler(http.StripPrefix(path.Join(basePath, "/static/"), fileServer))
@@ -188,7 +174,7 @@ func GetRouter(c config.Configuration, port int, basePath string) *mux.Router {
 			return
 		}
 
-		scanResult, err := kubeScanner.Get(decodedValue)
+		scanResult, err := kubeScanner.GetImageScanResult(decodedValue)
 		if err != nil {
 			logrus.Error(err, "Failed to get image scan details", imageTag)
 			return
@@ -202,29 +188,20 @@ func GetRouter(c config.Configuration, port int, basePath string) *mux.Router {
 			http.NotFound(w, r)
 			return
 		}
-		adjustedConf := getConfigForQuery(c, r.URL.Query())
 
-		k, err := kube.CreateResourceProvider()
+		auditData, err := kubeScanner.GetKubeObjectsAudit()
 		if err != nil {
-			logrus.Errorf("Error fetching Kubernetes resources %v", err)
-			http.Error(w, "Error fetching Kubernetes resources", http.StatusInternalServerError)
+			logrus.Error(err, "Failed to get kube objects audit data")
 			return
 		}
 
-		k.FilterByNamespace(adjustedConf.NamespacesToScan...)
-		auditData, err := validator.RunAudit(adjustedConf, k)
-		if err != nil {
-			logrus.Errorf("Error getting audit data: %v", err)
-			http.Error(w, "Error running audit", 500)
-			return
-		}
-		MainHandler(w, r, adjustedConf, auditData, basePath)
+		MainHandler(w, r, c, auditData, basePath)
 
 	})
 	return router
 }
 
-func imageScanDetailsHandler(w http.ResponseWriter, r *http.Request, c config.Configuration, basePath string, scan *scanner.ImageScanResult) {
+func imageScanDetailsHandler(w http.ResponseWriter, r *http.Request, c config.Configuration, basePath string, scan *scanners.ImageScanResult) {
 	templateFileNames := []string{
 		HeadTemplateName,
 		NavbarTemplateName,
@@ -296,7 +273,7 @@ func imageScanDetailsHandler(w http.ResponseWriter, r *http.Request, c config.Co
 }
 
 // MainHandler gets template data and renders the dashboard with it.
-func MainHandler(w http.ResponseWriter, r *http.Request, c config.Configuration, auditData validator.AuditData, basePath string) {
+func MainHandler(w http.ResponseWriter, r *http.Request, c config.Configuration, auditData scanners.AuditData, basePath string) {
 	jsonData, err := json.Marshal(auditData)
 
 	if err != nil {
@@ -317,13 +294,6 @@ func MainHandler(w http.ResponseWriter, r *http.Request, c config.Configuration,
 		return
 	}
 	writeTemplate(tmpl, &data, w)
-}
-
-// JSONHandler gets template data and renders json with it.
-func JSONHandler(w http.ResponseWriter, r *http.Request, auditData interface{}) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(auditData)
 }
 
 // DetailsHandler returns details for a given error type

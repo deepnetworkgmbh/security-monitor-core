@@ -2,7 +2,7 @@ package dashboard
 
 import (
 	"github.com/deepnetworkgmbh/security-monitor-core/pkg/config"
-	"github.com/deepnetworkgmbh/security-monitor-core/pkg/validator"
+	"github.com/deepnetworkgmbh/security-monitor-core/pkg/scanners"
 	"html/template"
 	"strings"
 )
@@ -11,7 +11,7 @@ import (
 type templateData struct {
 	BasePath  string
 	Config    config.Configuration
-	AuditData validator.AuditData
+	AuditData scanners.AuditData
 	JSON      template.JS
 }
 

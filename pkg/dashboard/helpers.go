@@ -16,31 +16,30 @@ package dashboard
 
 import (
 	"fmt"
-	"github.com/deepnetworkgmbh/security-monitor-core/pkg/validator"
-	"github.com/deepnetworkgmbh/security-monitor-core/pkg/validator/messages"
+	"github.com/deepnetworkgmbh/security-monitor-core/pkg/scanners"
 
 	"net/url"
 	"strings"
 )
 
-func getAllControllerResults(nr validator.NamespaceResult) []validator.ControllerResult {
+func getAllControllerResults(nr scanners.NamespaceResult) []scanners.ControllerResult {
 	return nr.GetAllControllerResults()
 }
 
-func getWarningWidth(counts validator.CountSummary, fullWidth int) uint {
+func getWarningWidth(counts scanners.CountSummary, fullWidth int) uint {
 	return uint(float64(counts.Successes+counts.Warnings) / float64(counts.Successes+counts.Warnings+counts.Errors) * float64(fullWidth))
 }
 
-func getSuccessWidth(counts validator.CountSummary, fullWidth int) uint {
+func getSuccessWidth(counts scanners.CountSummary, fullWidth int) uint {
 	return uint(float64(counts.Successes) / float64(counts.Successes+counts.Warnings+counts.Errors) * float64(fullWidth))
 }
 
-func getClusterGrade(counts validator.CountSummary) string {
+func getClusterGrade(counts scanners.CountSummary) string {
 	score := counts.GetScore()
 	return getGrade(score)
 }
 
-func getScansGrade(summary validator.ScansSummary) string {
+func getScansGrade(summary scanners.ScansSummary) string {
 	score := summary.GetScore()
 	return getGrade(score)
 }
@@ -75,12 +74,12 @@ func getGrade(score uint) string {
 	}
 }
 
-func getClusterWeatherIcon(counts validator.CountSummary) string {
+func getClusterWeatherIcon(counts scanners.CountSummary) string {
 	score := counts.GetScore()
 	return getWeatherIcon(score)
 }
 
-func getScanWeatherIcon(counts validator.ScansSummary) string {
+func getScanWeatherIcon(counts scanners.ScansSummary) string {
 	score := counts.GetScore()
 	return getWeatherIcon(score)
 }
@@ -99,7 +98,7 @@ func getWeatherIcon(score uint) string {
 	}
 }
 
-func getWeatherText(counts validator.CountSummary) string {
+func getWeatherText(counts scanners.CountSummary) string {
 	score := counts.GetScore()
 	if score >= 90 {
 		return "Smooth sailing"
@@ -114,7 +113,7 @@ func getWeatherText(counts validator.CountSummary) string {
 	}
 }
 
-func getIcon(rm validator.ResultMessage) string {
+func getIcon(rm scanners.ResultMessage) string {
 	switch rm.Type {
 	case "nodata":
 		return "fas fa-circle"
@@ -131,8 +130,8 @@ func getCategoryLink(category string) string {
 	return strings.Replace(strings.ToLower(category), " ", "-", -1)
 }
 
-func getHelpLink(category string, cr validator.ContainerResult) string {
-	if category == messages.CategoryImages {
+func getHelpLink(category string, cr scanners.ContainerResult) string {
+	if category == "Images" {
 		return fmt.Sprintf("image/%v", url.PathEscape(cr.Image));
 	} else {
 		categoryFmt := strings.Replace(strings.ToLower(category), " ", "-", -1)
