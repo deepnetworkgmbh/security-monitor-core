@@ -2,11 +2,6 @@ package kube
 
 import (
 	"bytes"
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"regexp"
-	"strings"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -64,67 +59,8 @@ func (rp *ResourceProvider) GetAllImageTags() []string {
 	return images
 }
 
-// CreateResourceProvider returns a new ResourceProvider object to interact with k8s resources
-func CreateResourceProvider(directory string) (*ResourceProvider, error) {
-	if directory != "" {
-		return CreateResourceProviderFromPath(directory)
-	}
-	return CreateResourceProviderFromCluster()
-}
-
-// CreateResourceProviderFromPath returns a new ResourceProvider using the YAML files in a directory
-func CreateResourceProviderFromPath(directory string) (*ResourceProvider, error) {
-	resources := ResourceProvider{
-		ServerVersion:          "unknown",
-		SourceType:             "Path",
-		SourceName:             directory,
-		Nodes:                  []corev1.Node{},
-		Deployments:            []appsv1.Deployment{},
-		StatefulSets:           []appsv1.StatefulSet{},
-		DaemonSets:             []appsv1.DaemonSet{},
-		Jobs:                   []batchv1.Job{},
-		CronJobs:               []batchv1beta1.CronJob{},
-		ReplicationControllers: []corev1.ReplicationController{},
-		Namespaces:             []corev1.Namespace{},
-		Pods:                   []corev1.Pod{},
-	}
-
-	addYaml := func(contents string) error {
-		return addResourceFromString(contents, &resources)
-	}
-
-	visitFile := func(path string, f os.FileInfo, err error) error {
-		if !strings.HasSuffix(path, ".yml") && !strings.HasSuffix(path, ".yaml") {
-			return nil
-		}
-		contents, err := ioutil.ReadFile(path)
-		if err != nil {
-			logrus.Errorf("Error reading file %v", path)
-			return err
-		}
-		specs := regexp.MustCompile("\n-+\n").Split(string(contents), -1)
-		for _, spec := range specs {
-			if strings.TrimSpace(spec) == "" {
-				continue
-			}
-			err = addYaml(spec)
-			if err != nil {
-				logrus.Errorf("Error parsing YAML: (%v)", err)
-				return err
-			}
-		}
-		return nil
-	}
-
-	err := filepath.Walk(directory, visitFile)
-	if err != nil {
-		return nil, err
-	}
-	return &resources, nil
-}
-
-// CreateResourceProviderFromCluster creates a new ResourceProvider using live data from a cluster
-func CreateResourceProviderFromCluster() (*ResourceProvider, error) {
+// CreateResourceProvider creates a new ResourceProvider using live data from a cluster
+func CreateResourceProvider() (*ResourceProvider, error) {
 	kubeConf, configError := config.GetConfig()
 	if configError != nil {
 		logrus.Errorf("Error fetching KubeConfig %v", configError)

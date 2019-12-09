@@ -150,7 +150,7 @@ func getConfigForQuery(base config.Configuration, query url.Values) config.Confi
 }
 
 // GetRouter returns a mux router serving all routes necessary for the dashboard
-func GetRouter(c config.Configuration, auditPath string, port int, basePath string, auditData *validator.AuditData) *mux.Router {
+func GetRouter(c config.Configuration, port int, basePath string) *mux.Router {
 	router := mux.NewRouter().PathPrefix(basePath).Subrouter()
 	kubeScanner := scanner.NewScanner(c.Images.ScannerUrl)
 	fileServer := http.FileServer(GetAssetBox())
@@ -169,28 +169,6 @@ func GetRouter(c config.Configuration, auditPath string, port int, basePath stri
 			return
 		}
 		w.Write(favicon)
-	})
-
-	router.HandleFunc("/results.json", func(w http.ResponseWriter, r *http.Request) {
-		adjustedConf := getConfigForQuery(c, r.URL.Query())
-		if auditData == nil {
-			k, err := kube.CreateResourceProvider(auditPath)
-			if err != nil {
-				logrus.Errorf("Error fetching Kubernetes resources %v", err)
-				http.Error(w, "Error fetching Kubernetes resources", http.StatusInternalServerError)
-				return
-			}
-
-			k.FilterByNamespace(adjustedConf.NamespacesToScan...)
-			auditDataObj, err := validator.RunAudit(adjustedConf, k)
-			if err != nil {
-				http.Error(w, "Error Fetching Deployments", http.StatusInternalServerError)
-				return
-			}
-			auditData = &auditDataObj
-		}
-
-		JSONHandler(w, r, auditData)
 	})
 
 	router.HandleFunc("/details/{category}", func(w http.ResponseWriter, r *http.Request) {
@@ -226,25 +204,21 @@ func GetRouter(c config.Configuration, auditPath string, port int, basePath stri
 		}
 		adjustedConf := getConfigForQuery(c, r.URL.Query())
 
-		if auditData == nil {
-			k, err := kube.CreateResourceProvider(auditPath)
-			if err != nil {
-				logrus.Errorf("Error fetching Kubernetes resources %v", err)
-				http.Error(w, "Error fetching Kubernetes resources", http.StatusInternalServerError)
-				return
-			}
-
-			k.FilterByNamespace(adjustedConf.NamespacesToScan...)
-			auditData, err := validator.RunAudit(adjustedConf, k)
-			if err != nil {
-				logrus.Errorf("Error getting audit data: %v", err)
-				http.Error(w, "Error running audit", 500)
-				return
-			}
-			MainHandler(w, r, adjustedConf, auditData, basePath)
-		} else {
-			MainHandler(w, r, adjustedConf, *auditData, basePath)
+		k, err := kube.CreateResourceProvider()
+		if err != nil {
+			logrus.Errorf("Error fetching Kubernetes resources %v", err)
+			http.Error(w, "Error fetching Kubernetes resources", http.StatusInternalServerError)
+			return
 		}
+
+		k.FilterByNamespace(adjustedConf.NamespacesToScan...)
+		auditData, err := validator.RunAudit(adjustedConf, k)
+		if err != nil {
+			logrus.Errorf("Error getting audit data: %v", err)
+			http.Error(w, "Error running audit", 500)
+			return
+		}
+		MainHandler(w, r, adjustedConf, auditData, basePath)
 
 	})
 	return router
