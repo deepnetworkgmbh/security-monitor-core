@@ -9,8 +9,7 @@ data:
   config.yaml:  |
     services:
       scannersUrl: http://scanners
-      imageScannersUrl: http://image-scanner
-  
+
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -18,6 +17,7 @@ metadata:
   name: security-monitor
   labels:
     app: security-monitor
+
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
@@ -26,6 +26,7 @@ metadata:
   labels:
     app: security-monitor
 rules:
+
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
@@ -40,6 +41,8 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: security-monitor
+    namespace: default
+
 ---
 apiVersion: v1
 kind: Service
@@ -57,6 +60,7 @@ spec:
   selector:
     app: security-monitor
   type: ClusterIP
+
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -81,7 +85,6 @@ spec:
       containers:
       - command:
         - security-monitor
-        - --dashboard
         - --config
         - /opt/app/config.yaml
         image: 'deepnetwork/security-monitor:0.1.0'
