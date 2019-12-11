@@ -67,3 +67,35 @@ body {
   margin-right: 10px;
   color: #f26c21;
 }
+
+.image-result-Succeeded {
+  color: green;
+}
+
+.image-result-Failed {
+  color: red;
+}
+
+.severity-CRITICAL {
+  color: red;
+}
+
+.severity-HIGH {
+  color: orangered;
+}
+
+.severity-MEDIUM {
+  color: saddlebrown;
+}
+
+.severity-LOW {
+  color: green;
+}
+
+h1.image-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: normal;
+  height: 40px;
+  line-height: 40px;
+}
