@@ -338,3 +338,14 @@ a.more-info:hover {
   0% {opacity: 0;}
   100% {opacity: 1;}
 }
+
+.cve-detail {
+  border: solid 1px #ccc;
+  border-radius: 4px;
+  padding: 3px;
+}
+
+.cve-detail p {
+  margin-top:1px;
+  padding: 3px;
+}

@@ -3,70 +3,100 @@
 
 <head>
     {{ template "head" . }}
-    <link rel="stylesheet" href="static/css/scan-details.css">
+  <link rel="stylesheet" href="static/css/scan-details.css">
 </head>
 
 <body>
 <div class="navbar">
   <div class="navbar-content">
     <a href="/">
-      <img class="logo" src="static/images/polaris-logo.png" alt="Polaris" />
+      <img class="logo" src="static/images/polaris-logo.png" alt="Polaris"/>
     </a>
   </div>
 </div>
 
 <div class="main-content">
   <div class="card details">
-    <span> {{ .ImageTag }} </span>
-    <p> {{ .ScanResult }} </p>
+    <h3 style="float:right;" class="image-result-{{ .ScanResult }}"> {{ .ScanResult }} </h3>
+    <h1 class="image-name">
+       {{ .ImageTag }}
+    </h1>
 
-    {{ if (eq .ScanResult "Failed") }}
-{{/*      <h3> Image vulnerabilities scan failed</h3>*/}}
-      <span> {{ .Description }} </span>
-    {{ end }}
-
-    {{ if (eq .ScanResult "NotFound") }}
-{{/*      <h3> No Image vulnerabilities scan data</h3>*/}}
-      <span>Image scanner might not support image OS or container registry</span>
-    {{ end }}
-
-    {{ if (eq .ScanResult "Succeeded") }}
-
-      {{ range $target := .ScanTargets }}
-
-        <div class="card">
-          <span>{{ $target.Name }}</span>
-
-          {{ range $target.VulnerabilitiesGroups }}
-            <div class="expandable-table">
-
-              <div class="name">
-                <span class="caret-expander"></span>
-                <span> {{ .Count }} issues with <strong> {{ .Severity }} </strong> severity </span>
-              </div>
-
-              <div class="expandable-content">
-                {{ range .CVEs }}
-                  <p> <i>{{ .Id }}</i> in <strong>{{ .PackageName }}</strong> version {{ .InstalledVersion }}</p>
-                  <p> <strong>Title:</strong> {{ .Title }} </p>
-                  <p> <strong>Remediation:</strong> Update package to {{ .FixedVersion }} </p>
-                  <p> {{ .Description }} </p>
-                  <ul>
-                    {{ range .References }}
-                      <li> <a href=">{{ . }}">{{ . }}</a> </li>
-                    {{ end }}
-                  </ul>
-                {{ end }}
-              </div>
-
-            </div>
-          {{ end }}
-
-        </div>
-
+      {{ if (eq .ScanResult "Failed") }}
+        <h3> Image vulnerabilities scan failed</h3>
+        <span> {{ .Description }} </span>
       {{ end }}
 
-    {{ end }}
+      {{ if (eq .ScanResult "NotFound") }}
+        <h3> No Image vulnerabilities scan data</h3>
+        <span>Image scanner might not support image OS or container registry</span>
+        <span> {{ .Description }} </span>
+      {{ end }}
+
+      {{ if (eq .ScanResult "Succeeded") }}
+          {{ range $tIndex, $target := .ScanTargets }}
+            <ul>
+              <li>
+                <input type="checkbox" id="target{{ $tIndex }}" checked/>
+                <label for="target{{ $tIndex }}">
+                  Target: {{ $target.Name }}
+                </label>
+                <ul>
+                    {{ range $gIndex, $element := $target.VulnerabilitiesGroups }}
+                      <li>
+                        <input type="checkbox" id="t{{ $tIndex }}g{{ $gIndex }}" checked/>
+                        <label for="t{{ $tIndex }}g{{ $gIndex }}">
+                            {{ $element.Count }} issues with
+                          <strong class="severity-{{ $element.Severity }}"> {{ $element.Severity }} </strong>
+                          severity
+                        </label>
+                        <ul>
+                            {{ range $cveIndex, $cve := $element.CVEs }}
+                              <li>
+                                <input type="checkbox"
+                                       id="t{{ $tIndex }}vg{{ $gIndex }}cve{{ $cveIndex }}"/>
+                                <label for="t{{ $tIndex }}vg{{ $gIndex }}cve{{ $cveIndex }}">
+                                  <i>{{ $cve.Id }}</i> in <strong>{{ $cve.PackageName }}</strong>
+                                  version {{ $cve.InstalledVersion }}
+                                </label>
+                                <ul>
+                                  <li>
+                                      <div class="cve-detail">
+                                      {{ if gt (len $cve.Title) 0 }}
+                                        <p><strong>Title:</strong> {{ $cve.Title }} </p>
+                                      {{ end }}
+                                      {{ if gt (len $cve.FixedVersion) 0 }}
+                                          <p><strong>Remediation:</strong> Update package to {{ $cve.FixedVersion }} </p>
+                                      {{ end }}
+
+                                      <p> {{ $cve.Description }} </p>
+                                      {{ if gt (len $cve.References) 0 }}
+                                        <input type="checkbox"
+                                               id="t{{ $tIndex }}vg{{ $gIndex }}cve{{ $cveIndex }}ref"/>
+                                        <label for="t{{ $tIndex }}vg{{ $gIndex }}cve{{ $cveIndex }}ref">
+                                          <strong>References</strong>
+                                        </label>
+                                        <ul>
+                                            {{ range $cve.References }}
+                                              <li> &bull;
+                                                  <a href="{{ . }}" target="_blank" style="text-decoration: none;">{{ . }}</a>
+                                              </li>
+                                            {{ end }}
+                                        </ul>
+                                      {{ end}}
+                                      </div>
+                                  </li>
+                                </ul>
+                              </li>
+                            {{ end }}
+                        </ul>
+                      </li>
+                    {{ end }}
+                </ul>
+              </li>
+            </ul>
+          {{ end }}
+      {{ end }}
   </div>
 </div>
 </body>
