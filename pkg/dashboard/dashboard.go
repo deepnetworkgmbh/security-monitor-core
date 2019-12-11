@@ -49,6 +49,8 @@ const (
 	CheckDetailsTemplateName = "check-details.gohtml"
 	// ImageScanDetailsTemplateName is a page for rendering a single image scan details
 	ImageScanDetailsTemplateName = "image-scan-details.gohtml"
+	// Container Image Vulnerabilities Scans general overview
+	ImageScansOverviewTemplateName = "image-scans-overview.gohtml"
 )
 
 var (
@@ -182,6 +184,25 @@ func GetRouter(c config.Configuration, port int, basePath string) *mux.Router {
 
 		imageScanDetailsHandler(w, r, c, basePath, &scanResult)
 	})
+
+
+	router.HandleFunc("/overview/{imageTag:.*}", func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		imageTag := vars["imageTag"]
+
+		decodedValue, err := url.QueryUnescape(imageTag)
+		if err != nil {
+			logrus.Error(err, "Failed to unescape", imageTag)
+			return
+		}
+		scanResult, err := kubeScanner.GetImageScanResult(decodedValue)
+		if err != nil {
+			logrus.Error(err, "Failed to get image scan details", imageTag)
+			return
+		}
+		imageScansOverviewHandler(w,r,c, basePath, &scanResult)
+	})
+
 
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" && r.URL.Path != basePath {
@@ -325,4 +346,75 @@ func DetailsHandler(w http.ResponseWriter, r *http.Request, category string, bas
 		BasePath: basePath,
 	}
 	writeTemplate(tmpl, &data, w)
+}
+
+func imageScansOverviewHandler(w http.ResponseWriter, r *http.Request, c config.Configuration, basePath string, scan *scanners.ImageScanResult) {
+	templateFileNames := []string{
+		HeadTemplateName,
+		NavbarTemplateName,
+		ImageScansOverviewTemplateName,
+		FooterTemplateName,
+	}
+	tmpl := template.New("image-scans-overview")
+	tmpl, err := parseTemplateFiles(tmpl, templateFileNames)
+	if err != nil {
+		logrus.Printf("Error getting template data %v", err)
+		http.Error(w, "Error getting template data", 500)
+		return
+	}
+
+	data := scanTemplateData{
+		BasePath:   basePath,
+		Config:     c,
+		ImageTag:   scan.Image,
+		ScanResult: scan.ScanResult,
+		Description:scan.Description,
+		UsedIn: []imageUsage{},
+		ScanTargets: []imageScanTarget{},
+	}
+
+	for _, target := range scan.Targets{
+		targetModel := imageScanTarget{
+			Name:target.Target,
+			VulnerabilitiesGroups: []vulnerabilitiesGroup{},
+		}
+
+		cveDict := make(map[string][]cveDetails)
+
+		for _, cve := range target.Vulnerabilities {
+			cveDict[cve.Severity] = append(cveDict[cve.Severity], cveDetails{
+				Id:               cve.CVE,
+				PackageName:      cve.Package,
+				InstalledVersion: cve.InstalledVersion,
+				FixedVersion:     cve.FixedVersion,
+				Title:            cve.Title,
+				Description:      cve.Description,
+				References:       cve.References,
+			})
+		}
+
+		keys := make([]string, 0, len(cveDict))
+		for k := range cveDict {
+			keys = append(keys, k)
+		}
+		sort.Sort(bySeverity(keys))
+
+		for _, k := range keys {
+			targetModel.VulnerabilitiesGroups = append(targetModel.VulnerabilitiesGroups, vulnerabilitiesGroup{
+				Severity:k,
+				Count: len(cveDict[k]),
+				CVEs:cveDict[k],
+			})
+		}
+
+		data.ScanTargets = append(data.ScanTargets, targetModel)
+	}
+
+	buf := &bytes.Buffer{}
+	err = tmpl.Execute(buf, data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	buf.WriteTo(w)
 }
