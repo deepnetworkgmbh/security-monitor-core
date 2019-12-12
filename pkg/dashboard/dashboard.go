@@ -185,24 +185,14 @@ func GetRouter(c config.Configuration, port int, basePath string) *mux.Router {
 		imageScanDetailsHandler(w, r, c, basePath, &scanResult)
 	})
 
-
-	router.HandleFunc("/overview/{imageTag:.*}", func(w http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
-		imageTag := vars["imageTag"]
-
-		decodedValue, err := url.QueryUnescape(imageTag)
+	router.HandleFunc("/overview", func(w http.ResponseWriter, r *http.Request) {
+		scanResult, err := kubeScanner.GetImageScansSummary()
 		if err != nil {
-			logrus.Error(err, "Failed to unescape", imageTag)
-			return
-		}
-		scanResult, err := kubeScanner.GetImageScanResult(decodedValue)
-		if err != nil {
-			logrus.Error(err, "Failed to get image scan details", imageTag)
+			logrus.Error(err, "Failed to get container images scan summary")
 			return
 		}
 		imageScansOverviewHandler(w,r,c, basePath, &scanResult)
 	})
-
 
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" && r.URL.Path != basePath {
