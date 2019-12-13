@@ -2,11 +2,17 @@
 <html>
 
 <head>
+    <script>
+        window.auditData = {{ .JSON }};
+    </script>
     {{ template "head" . }}
     <link rel="stylesheet" href="static/css/scan-details.css">
+    <script src="https://d3js.org/d3.v4.js"></script>
+    <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+    <script type="text/javascript" src="static/js/overview-chart.js"></script>
 </head>
 
-<body>
+<body onload="setupChart()">
 <div class="navbar">
     <div class="navbar-content">
         <a href="/">
@@ -19,6 +25,21 @@
     <div class="card details">
         <h2>Container Images Overview</h2>
 
+        <div style="width:500px;height:350px;border:solid 1px gray;float:left;" id="chart"></div>
+        <div style="float:left;padding:10px;">
+            This cluster uses <b>{{ (len .Results) }} unique container images</b>:
+            <ul>
+                {{ range $i, $severity := .OverallSeverity }}
+                    {{ if gt ($severity.Count) 0 }}
+                    <li>
+                        <b>{{ $severity.Count }} with {{ $severity.Severity }}</b> severity
+                    </li>
+                    {{ end }}
+                {{ end }}
+            </ul>
+            <br>
+        </div>
+        <div style="clear: both;"></div>
     </div>
 </div>
 </body>

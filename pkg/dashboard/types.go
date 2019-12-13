@@ -26,6 +26,14 @@ type scanTemplateData struct {
 	ScanTargets []imageScanTarget
 }
 
+type scanOverviewData struct {
+	BasePath string
+	Config   config.Configuration
+	Results  []scanners.ContainerImageScanResult
+	OverallSeverity map[string]scanners.VulnerabilityCounter
+	JSON 	 template.JS
+}
+
 type imageUsage struct {
 
 }

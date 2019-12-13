@@ -37,3 +37,17 @@ type VulnerabilityCounter struct {
 	Severity string `json:"severity"`
 	Count    int    `json:"count"`
 }
+
+type ContainerImageScansSummary struct {
+	Images []ContainerImageScanResult `json:"images"`
+}
+
+// ImageScanResult is a short description of a single container image vulnerabilities audit
+type ContainerImageScanResult struct {
+	Image       string                  `json:"image"`
+	ScanResult  string                  `json:"scanResult"`
+	Description string                  `json:"description"`
+	Counters    []VulnerabilityCounter  `json:"counters"`
+	Attributes  []string                `json:"attributes"`
+	Pods        []string                `json:"pods"`
+}

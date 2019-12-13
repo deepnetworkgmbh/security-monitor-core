@@ -185,24 +185,14 @@ func GetRouter(c config.Configuration, port int, basePath string) *mux.Router {
 		imageScanDetailsHandler(w, r, c, basePath, &scanResult)
 	})
 
-
-	router.HandleFunc("/overview/{imageTag:.*}", func(w http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
-		imageTag := vars["imageTag"]
-
-		decodedValue, err := url.QueryUnescape(imageTag)
+	router.HandleFunc("/overview", func(w http.ResponseWriter, r *http.Request) {
+		scanResult, err := kubeScanner.GetImageScansSummary()
 		if err != nil {
-			logrus.Error(err, "Failed to unescape", imageTag)
-			return
-		}
-		scanResult, err := kubeScanner.GetImageScanResult(decodedValue)
-		if err != nil {
-			logrus.Error(err, "Failed to get image scan details", imageTag)
+			logrus.Error(err, "Failed to get container images scan summary")
 			return
 		}
 		imageScansOverviewHandler(w,r,c, basePath, &scanResult)
 	})
-
 
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" && r.URL.Path != basePath {
@@ -348,7 +338,7 @@ func DetailsHandler(w http.ResponseWriter, r *http.Request, category string, bas
 	writeTemplate(tmpl, &data, w)
 }
 
-func imageScansOverviewHandler(w http.ResponseWriter, r *http.Request, c config.Configuration, basePath string, scan *scanners.ImageScanResult) {
+func imageScansOverviewHandler(w http.ResponseWriter, r *http.Request, c config.Configuration, basePath string, scan *scanners.ContainerImageScansSummary) {
 	templateFileNames := []string{
 		HeadTemplateName,
 		NavbarTemplateName,
@@ -363,52 +353,43 @@ func imageScansOverviewHandler(w http.ResponseWriter, r *http.Request, c config.
 		return
 	}
 
-	data := scanTemplateData{
+	var severities = []string{"CRITICAL", "HIGH", "MEDIUM", "LOW", "UNKNOWN"}
+
+	data := scanOverviewData{
 		BasePath:   basePath,
 		Config:     c,
-		ImageTag:   scan.Image,
-		ScanResult: scan.ScanResult,
-		Description:scan.Description,
-		UsedIn: []imageUsage{},
-		ScanTargets: []imageScanTarget{},
+		Results: scan.Images,
+		OverallSeverity: map[string]scanners.VulnerabilityCounter{},
 	}
 
-	for _, target := range scan.Targets{
-		targetModel := imageScanTarget{
-			Name:target.Target,
-			VulnerabilitiesGroups: []vulnerabilitiesGroup{},
+	// initialize severity counters
+	for  _, severity := range severities {
+		data.OverallSeverity[severity] = scanners.VulnerabilityCounter {
+			Severity: severity,
+			Count: 0,
 		}
-
-		cveDict := make(map[string][]cveDetails)
-
-		for _, cve := range target.Vulnerabilities {
-			cveDict[cve.Severity] = append(cveDict[cve.Severity], cveDetails{
-				Id:               cve.CVE,
-				PackageName:      cve.Package,
-				InstalledVersion: cve.InstalledVersion,
-				FixedVersion:     cve.FixedVersion,
-				Title:            cve.Title,
-				Description:      cve.Description,
-				References:       cve.References,
-			})
-		}
-
-		keys := make([]string, 0, len(cveDict))
-		for k := range cveDict {
-			keys = append(keys, k)
-		}
-		sort.Sort(bySeverity(keys))
-
-		for _, k := range keys {
-			targetModel.VulnerabilitiesGroups = append(targetModel.VulnerabilitiesGroups, vulnerabilitiesGroup{
-				Severity:k,
-				Count: len(cveDict[k]),
-				CVEs:cveDict[k],
-			})
-		}
-
-		data.ScanTargets = append(data.ScanTargets, targetModel)
 	}
+
+
+	// consolidate all the severity counts
+	for _, image := range scan.Images{
+		for _, counter := range image.Counters {
+			var tmp = data.OverallSeverity[counter.Severity]
+			tmp.Count += counter.Count
+			data.OverallSeverity[counter.Severity] = tmp
+		}
+	}
+
+	keys := make([]string, 0, len(data.OverallSeverity))
+	for k := range data.OverallSeverity {
+		keys = append(keys, k)
+	}
+	sort.Sort(bySeverity(keys))
+
+
+	// serialize overall severity counter data for browser
+	jsonData, err := json.Marshal(data.OverallSeverity)
+	data.JSON = template.JS(jsonData)
 
 	buf := &bytes.Buffer{}
 	err = tmpl.Execute(buf, data)
