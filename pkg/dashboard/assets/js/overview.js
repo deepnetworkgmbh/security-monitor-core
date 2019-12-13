@@ -1,6 +1,6 @@
 function setupChart() {
 
-// set the dimensions and margins of the graph
+    // set the dimensions and margins of the graph
     const width = 500
     const height = 360
     const margin = 10
@@ -69,8 +69,6 @@ function setupChart() {
             var posC = outerArc.centroid(d); // Label position = almost the same as posB
             var midangle = d.startAngle + (d.endAngle - d.startAngle) / 2 // we need the angle to see if the X position will be at the extreme right or extreme left
             posC[0] = radius * 0.90 * (midangle < Math.PI ? 1 : -1); // multiply by 1 or -1 to put it on the right or on the left
-            console.log(posC);
-
             return [posA, posB, posC]
         });
 
@@ -124,10 +122,8 @@ function setData() {
     // return sorted array back into a single object
     for(let i=0;i<sorted.length;i++) {
         let item = sorted[i];
-        console.log(item);
         data[item.severity] = item.count;
     }
-    console.log(data);
     return data;
 }
 
@@ -149,15 +145,111 @@ function severityWeigh(s) {
 }
 
 function createAttributeGroup() {
-    for(let i=0;i<window.auditData.Results;i++) {
-        console.log(window.auditData.Results[i]);
-    }
-    console.log(`[] chart created`);
+    const defaultGroupBy = 'namespace';
 
+    let groupBy = [];
+    for(let i=0;i<window.auditData.Results.length;i++) {
+        const image = window.auditData.Results[i];
+
+        for(let j=0;j<image.attributes.length;j++) {
+            const attribute = image.attributes[j];
+            const chunk = attribute.split(':');
+            const name = chunk[0];
+            const value = chunk[1];
+            const attributeIndex = _.findIndex(groupBy,function(o) { return o.name == name; });
+
+            if (attributeIndex === -1) {
+                groupBy.push({
+                    name: name,
+                    count: 1
+                });
+                console.log('adding attribute :' + name);
+            }else{
+                groupBy[attributeIndex].count +=1;
+            }
+        }
+    }
+    groupBy = _.sortBy(groupBy, 'count').reverse();
+    console.log(groupBy);
+
+    $("#group-by-dropdown").empty();
+    for(let i=0;i<groupBy.length;i++){
+        const optionName = groupBy[i].name + ' (' + groupBy[i].count + ')';
+        const optionValue = groupBy[i].name;
+
+        $("#group-by-dropdown").append(new Option(optionName, optionValue));
+    }
+    $("#group-by-dropdown").val(defaultGroupBy);
 }
 
-function setup() {
+function setListOfItemsByGroup() {
 
+    const groupBy = $("#group-by-dropdown").val();
+    console.log(`[] grouping by `+ groupBy);
+
+
+    let results = [];
+
+    for(let i=0;i<window.auditData.Results.length;i++) {
+        const image = window.auditData.Results[i];
+
+        const attributeIndex = _.findIndex(image.attributes, function (o) {
+            return o.startsWith(groupBy+ ':');
+        });
+
+        if (attributeIndex === -1) continue;
+
+        const attributeValue = image.attributes[attributeIndex].split(':')[1];
+
+        const imageIndex = _.findIndex(results, function (o) {
+            return o.title === attributeValue;
+        });
+
+        if (imageIndex === -1) {
+            // create new group
+            results.push({
+                title: attributeValue,
+                images: [image]
+            });
+        }else {
+            // add this image under group
+            results[imageIndex].images.push(image);
+        }
+
+    }
+    console.log(`-------`);
+    console.log(results);
+    console.log(`-------`);
+
+
+    // render images
+    $("#results").empty();
+    for(let i=0;i<results.length;i++){
+        const img = results[i];
+
+        let sublist = `<ul>`;
+        for(let j=0;j<img.images.length;j++) {
+            sublist += '<li>' + img.images[j].image + '</li>';
+        }
+        sublist += '</ul>';
+
+        let imagehtml = '<div>';
+        imagehtml += '<h4>' + img.title +  '(' + img.images.length  + ')</h4>';
+        imagehtml += sublist;
+        imagehtml += '</div>';
+
+        $("#results").append(imagehtml);
+    }
+}
+
+
+function setupOverview() {
     setupChart();
     createAttributeGroup();
+    setListOfItemsByGroup();
+}
+
+function setupGroups() {
+//        var newDiv = document.createElement('div');
+//        $(this).append(newDiv);
 }

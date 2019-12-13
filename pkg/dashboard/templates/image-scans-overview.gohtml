@@ -9,10 +9,11 @@
     <link rel="stylesheet" href="static/css/scan-details.css">
     <script src="https://d3js.org/d3.v4.js"></script>
     <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+    <script type="text/javascript" src="static/js/underscore.js"></script>
     <script type="text/javascript" src="static/js/overview.js"></script>
 </head>
 
-<body onload="setup()">
+<body onload="setupOverview()">
     <div class="navbar">
         <div class="navbar-content">
             <a href="/">
@@ -44,15 +45,11 @@
             <div style="border-top:solid 1px gray;clear: both;padding:10px;">
                 <div style="float:right;">
                     Group By
-                    <select>
-                        <option>Namespace</option>
-                        <option>Team</option>
-                        <option>Misc</option>
-                    </select>
+                    <select id="group-by-dropdown" onchange="setListOfItemsByGroup()"></select>
                 </div>
             </div>
             <div style="border-top:solid 1px gray;margin-top:25px;padding:10px;">
-
+                <div id="results"></div>
             </div>
         </div>
     </div>
