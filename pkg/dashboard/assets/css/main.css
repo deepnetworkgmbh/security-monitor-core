@@ -77,19 +77,27 @@ body {
 }
 
 .severity-CRITICAL {
-  color: red;
+  color: #a11f4c;
 }
 
 .severity-HIGH {
-  color: orangered;
+  color: #ff4500;
 }
 
 .severity-MEDIUM {
-  color: saddlebrown;
+  color: #f26c21;
 }
 
 .severity-LOW {
-  color: green;
+  color: #008000;
+}
+
+.severity-NOISSUES {
+  color: #8BD2DC;
+}
+
+.severity-NODATA {
+  color: #777777;
 }
 
 h1.image-name {

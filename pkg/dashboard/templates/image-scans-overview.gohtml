@@ -29,15 +29,11 @@
             <div style="float:left;padding:10px;">
                 This cluster uses <b>{{ (len .Results) }} unique container images</b>:
                 <ul>
-                    {{ range $i, $severity := .OverallSeverity }}
-                        {{ if gt ($severity.Count) 0 }}
+                    {{ range $i, $group := .ImagesGroups }}
                         <li>
                             <i class="fas fa-arrow-right" style="color:#aaa;"></i>
-                            <b>{{ $severity.Count }}</b>
-                            with
-                            <b class="severity-{{ $severity.Severity }}">{{ $severity.Severity }}</b> severity
+                            <b class="severity-{{ $group.Title }}">{{ $group.Count }}</b> {{$group.Description}}
                         </li>
-                        {{ end }}
                     {{ end }}
                 </ul>
                 <br>

@@ -353,29 +353,11 @@ func imageScansOverviewHandler(w http.ResponseWriter, r *http.Request, c config.
 		return
 	}
 
-	var severities = []string{"CRITICAL", "HIGH", "MEDIUM", "LOW", "UNKNOWN"}
-
 	data := scanOverviewData{
-		BasePath:   basePath,
-		Config:     c,
-		Results: scan.Images,
-		OverallSeverity: map[string]scanners.VulnerabilityCounter{},
-	}
-
-	// initialize severity counters
-	for  _, severity := range severities {
-		data.OverallSeverity[severity] = scanners.VulnerabilityCounter {
-			Severity: severity,
-			Count: 0,
-		}
-	}
-	// consolidate all the severity counts
-	for _, image := range scan.Images{
-		for _, counter := range image.Counters {
-			var tmp = data.OverallSeverity[counter.Severity]
-			tmp.Count += counter.Count
-			data.OverallSeverity[counter.Severity] = tmp
-		}
+		BasePath:     basePath,
+		Config:       c,
+		Results:      scan.Images,
+		ImagesGroups: calculateImageSummaries(scan.Images),
 	}
 
 	// serialize overall severity counter data for browser

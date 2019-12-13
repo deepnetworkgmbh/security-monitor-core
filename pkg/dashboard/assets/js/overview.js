@@ -20,8 +20,8 @@ function setupChart() {
 
     // set the color scale
     let color = d3.scaleOrdinal()
-        .domain(["CRITICAL", "HIGH", "MEDIUM", "LOW"])
-        .range(["red" , "orangered" , "#cc994f", "green"]);
+        .domain(["CRITICAL", "MEDIUM", "NOISSUES", "NODATA"])
+        .range(["#a11f4c" , "#f26c21" , "#8BD2DC", "#777777"]);
 
     // Compute the position of each group on the pie:
     let  pie = d3.pie()
@@ -52,7 +52,6 @@ function setupChart() {
         })
         .attr("stroke", "white")
         .style("stroke-width", "2px")
-        .style("opacity", 0.7)
 
     // Add the polylines between chart and labels:
     svg
@@ -102,46 +101,13 @@ function setupChart() {
 function setData() {
     let data = {};
 
-    let array = [];
-    for (let key in window.auditData.OverallSeverity) {
-        let count = window.auditData.OverallSeverity[key].count;
-        if(count>0){
-            array.push({
-                severity: key,
-                count: count,
-                weight: severityWeigh(key)
-            })
-        }
+    for (let key in window.auditData.ImagesGroups) {
+        let severity = window.auditData.ImagesGroups[key].Title
+        let count = window.auditData.ImagesGroups[key].Count
+        data[severity] = count;
     }
 
-    // sort data against severity weights
-    let sorted = array.sort(function (a, b) {
-        return (a.weight > b.weight) ? 1 : ((b.weight > a.weight) ? -1 : 0)
-    })
-
-    // return sorted array back into a single object
-    for(let i=0;i<sorted.length;i++) {
-        let item = sorted[i];
-        data[item.severity] = item.count;
-    }
     return data;
-}
-
-function severityWeigh(s) {
-    switch(s) {
-        case "CRITICAL":
-            return 0;
-        case "HIGH":
-            return 20;
-            case "MEDIUM":
-            return 40;
-        case "LOW":
-            return 60;
-        case "UNKNOWN":
-            return 80;
-        default:
-            return 1000;
-    }
 }
 
 function createAttributeGroup() {
