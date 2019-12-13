@@ -1,6 +1,5 @@
 function setupChart() {
 
-
 // set the dimensions and margins of the graph
     const width = 500
     const height = 360
@@ -16,13 +15,8 @@ function setupChart() {
 
     // Create dummy data
     // example: var data = {a: 9, b: 1, c: 14}
-    let data = {}; //window.auditData;
-    for (let key in window.auditData) {
-        let count = window.auditData[key].count;
-        if(count>0){
-            data[key] = window.auditData[key].count;
-        }
-    }
+    let data = setData();
+    window.severities = data;
 
     // set the color scale
     let color = d3.scaleOrdinal()
@@ -103,4 +97,67 @@ function setupChart() {
             var midangle = d.startAngle + (d.endAngle - d.startAngle) / 2
             return (midangle < Math.PI ? 'start' : 'end')
         })
+
+    console.log(`[] chart created`);
+}
+
+function setData() {
+    let data = {};
+
+    let array = [];
+    for (let key in window.auditData.OverallSeverity) {
+        let count = window.auditData.OverallSeverity[key].count;
+        if(count>0){
+            array.push({
+                severity: key,
+                count: count,
+                weight: severityWeigh(key)
+            })
+        }
+    }
+
+    // sort data against severity weights
+    let sorted = array.sort(function (a, b) {
+        return (a.weight > b.weight) ? 1 : ((b.weight > a.weight) ? -1 : 0)
+    })
+
+    // return sorted array back into a single object
+    for(let i=0;i<sorted.length;i++) {
+        let item = sorted[i];
+        console.log(item);
+        data[item.severity] = item.count;
+    }
+    console.log(data);
+    return data;
+}
+
+function severityWeigh(s) {
+    switch(s) {
+        case "CRITICAL":
+            return 0;
+        case "HIGH":
+            return 20;
+            case "MEDIUM":
+            return 40;
+        case "LOW":
+            return 60;
+        case "UNKNOWN":
+            return 80;
+        default:
+            return 1000;
+    }
+}
+
+function createAttributeGroup() {
+    for(let i=0;i<window.auditData.Results;i++) {
+        console.log(window.auditData.Results[i]);
+    }
+    console.log(`[] chart created`);
+
+}
+
+function setup() {
+
+    setupChart();
+    createAttributeGroup();
 }

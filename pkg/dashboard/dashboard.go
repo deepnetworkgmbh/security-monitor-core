@@ -369,8 +369,6 @@ func imageScansOverviewHandler(w http.ResponseWriter, r *http.Request, c config.
 			Count: 0,
 		}
 	}
-
-
 	// consolidate all the severity counts
 	for _, image := range scan.Images{
 		for _, counter := range image.Counters {
@@ -380,15 +378,8 @@ func imageScansOverviewHandler(w http.ResponseWriter, r *http.Request, c config.
 		}
 	}
 
-	keys := make([]string, 0, len(data.OverallSeverity))
-	for k := range data.OverallSeverity {
-		keys = append(keys, k)
-	}
-	sort.Sort(bySeverity(keys))
-
-
 	// serialize overall severity counter data for browser
-	jsonData, err := json.Marshal(data.OverallSeverity)
+	jsonData, err := json.Marshal(data)
 	data.JSON = template.JS(jsonData)
 
 	buf := &bytes.Buffer{}

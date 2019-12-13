@@ -9,38 +9,52 @@
     <link rel="stylesheet" href="static/css/scan-details.css">
     <script src="https://d3js.org/d3.v4.js"></script>
     <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
-    <script type="text/javascript" src="static/js/overview-chart.js"></script>
+    <script type="text/javascript" src="static/js/overview.js"></script>
 </head>
 
-<body onload="setupChart()">
-<div class="navbar">
-    <div class="navbar-content">
-        <a href="/">
-            <img class="logo" src="static/images/polaris-logo.png" alt="Polaris" />
-        </a>
-    </div>
-</div>
-
-<div class="main-content">
-    <div class="card details">
-        <h2>Container Images Overview</h2>
-
-        <div style="width:500px;height:350px;border:solid 1px gray;float:left;" id="chart"></div>
-        <div style="float:left;padding:10px;">
-            This cluster uses <b>{{ (len .Results) }} unique container images</b>:
-            <ul>
-                {{ range $i, $severity := .OverallSeverity }}
-                    {{ if gt ($severity.Count) 0 }}
-                    <li>
-                        <b>{{ $severity.Count }} with {{ $severity.Severity }}</b> severity
-                    </li>
-                    {{ end }}
-                {{ end }}
-            </ul>
-            <br>
+<body onload="setup()">
+    <div class="navbar">
+        <div class="navbar-content">
+            <a href="/">
+                <img class="logo" src="static/images/polaris-logo.png" alt="Polaris" />
+            </a>
         </div>
-        <div style="clear: both;"></div>
     </div>
-</div>
+
+    <div class="main-content">
+        <div class="card details">
+            <h2 style="border-bottom:solid 1px gray;padding-bottom: 10px;">Container Images Overview</h2>
+            <div style="width:500px;height:350px;float:left;" id="chart"></div>
+            <div style="float:left;padding:10px;">
+                This cluster uses <b>{{ (len .Results) }} unique container images</b>:
+                <ul>
+                    {{ range $i, $severity := .OverallSeverity }}
+                        {{ if gt ($severity.Count) 0 }}
+                        <li>
+                            <i class="fas fa-arrow-right" style="color:#aaa;"></i>
+                            <b>{{ $severity.Count }}</b>
+                            with
+                            <b class="severity-{{ $severity.Severity }}">{{ $severity.Severity }}</b> severity
+                        </li>
+                        {{ end }}
+                    {{ end }}
+                </ul>
+                <br>
+            </div>
+            <div style="border-top:solid 1px gray;clear: both;padding:10px;">
+                <div style="float:right;">
+                    Group By
+                    <select>
+                        <option>Namespace</option>
+                        <option>Team</option>
+                        <option>Misc</option>
+                    </select>
+                </div>
+            </div>
+            <div style="border-top:solid 1px gray;margin-top:25px;padding:10px;">
+
+            </div>
+        </div>
+    </div>
 </body>
 </html>
