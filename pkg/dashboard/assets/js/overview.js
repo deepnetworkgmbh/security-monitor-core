@@ -1,3 +1,11 @@
+let counters = {
+    "CRITICAL": 0,
+    "MEDIUM": 0,
+    "NOISSUES": 0,
+    "NODATA": 0
+}
+const severityList = ["CRITICAL", "MEDIUM", "NOISSUES", "NODATA"];
+
 function setupChart() {
 
     // set the dimensions and margins of the graph
@@ -98,6 +106,55 @@ function setupChart() {
     console.log(`[] chart created`);
 }
 
+function setupOverviewBar(resultGroup) {
+
+    console.log(resultGroup.barId);
+    console.log(resultGroup.severityBarData.domain);
+    console.log(resultGroup.severityBarData.range);
+
+    let formatPercent = d3.format(".0%"),
+        formatNumber = d3.format(".0f");
+
+    let threshold = d3.scaleThreshold()
+        .domain(resultGroup.severityBarData.domain)
+        .range(resultGroup.severityBarData.range);
+
+    let x = d3.scaleLinear()
+        .domain([0, 1])
+        .range([0, 200]);
+
+    let xAxis = d3.axisBottom(x)
+        .tickSize(13)
+        .tickValues(threshold.domain())
+        .tickFormat(function(d) { return d === 0.5 ? formatPercent(d) : formatNumber(100 * d); });
+
+    let g = d3.select("#" + resultGroup.barId)
+        .append("svg")
+        .call(xAxis);
+
+    g.select(".domain")
+        .remove();
+
+    g.selectAll("rect")
+        .data(threshold.range().map(function(color) {
+            var d = threshold.invertExtent(color);
+            if (d[0] == null) d[0] = x.domain()[0];
+            if (d[1] == null) d[1] = x.domain()[1];
+            return d;
+        }))
+        .enter().insert("rect", ".tick")
+        .attr("height", 8)
+        .attr("x", function(d) { return x(d[0]); })
+        .attr("width", function(d) { return x(d[1]) - x(d[0]); })
+        .attr("fill", function(d) { return threshold(d[0]); });
+
+    g.append("text")
+        .attr("fill", "#000")
+        .attr("font-weight", "bold")
+        .attr("text-anchor", "start")
+        .attr("y", -6)
+        .text("Population density");
+}
 function setData() {
     let data = {};
 
@@ -129,14 +186,14 @@ function createAttributeGroup() {
                     name: name,
                     count: 1
                 });
-                console.log('adding attribute :' + name);
+                //console.log('adding attribute :' + name);
             }else{
                 groupBy[attributeIndex].count +=1;
             }
         }
     }
     groupBy = _.sortBy(groupBy, 'count').reverse();
-    console.log(groupBy);
+    //console.log(groupBy);
 
     $("#group-by-dropdown").empty();
     for(let i=0;i<groupBy.length;i++){
@@ -151,11 +208,12 @@ function createAttributeGroup() {
 function setListOfItemsByGroup() {
 
     const groupBy = $("#group-by-dropdown").val();
-    console.log(`[] grouping by `+ groupBy);
+    //console.log(`[] grouping by `+ groupBy);
 
 
     let results = [];
 
+    // scan images
     for(let i=0;i<window.auditData.Results.length;i++) {
         const image = window.auditData.Results[i];
 
@@ -163,49 +221,178 @@ function setListOfItemsByGroup() {
             return o.startsWith(groupBy+ ':');
         });
 
+        // if image does not have the attribute, skip
         if (attributeIndex === -1) continue;
 
         const attributeValue = image.attributes[attributeIndex].split(':')[1];
 
+        // check if the image with the attribute value exists under the group
         const imageIndex = _.findIndex(results, function (o) {
             return o.title === attributeValue;
         });
 
         if (imageIndex === -1) {
-            // create new group
+            // create new image under group
             results.push({
                 title: attributeValue,
                 images: [image]
             });
         }else {
-            // add this image under group
+            // add existing image under group
             results[imageIndex].images.push(image);
         }
 
     }
-    console.log(`-------`);
-    console.log(results);
-    console.log(`-------`);
 
 
     // render images
     $("#results").empty();
     for(let i=0;i<results.length;i++){
-        const img = results[i];
+        const resultGroup = results[i];
+
+        window.counters = {
+            "CRITICAL": 0,
+            "MEDIUM": 0,
+            "NOISSUES": 0,
+            "NODATA": 0
+        }
 
         let sublist = `<ul>`;
-        for(let j=0;j<img.images.length;j++) {
-            sublist += '<li>' + img.images[j].image + '</li>';
+        for(let j=0;j<resultGroup.images.length;j++) {
+            sublist += '<li>';
+            sublist += '<div style="float:right;">' + parseSeverities(resultGroup.images[j]) + '</div>';
+            sublist += '<div class="imagename">' + shortenImageName(resultGroup.images[j].image) + '</div>';
+            sublist += '</li>';
         }
         sublist += '</ul>';
 
+        results[i].severitySummary = window.counters;
+        results[i].severityBarData = generateGroupSeverityData(window.counters);
+        results[i].barId = 'bar' + i;
+
         let imagehtml = '<div>';
-        imagehtml += '<h4>' + img.title +  '(' + img.images.length  + ')</h4>';
+        imagehtml += getBar(i);
+        imagehtml += '<h4>' + resultGroup.title +  '(' + resultGroup.images.length  + ')</h4>';
         imagehtml += sublist;
         imagehtml += '</div>';
 
         $("#results").append(imagehtml);
     }
+
+    for(let i=0;i<results.length;i++) {
+        setupOverviewBar(results[i]);
+    }
+    console.log(`-------`);
+    console.log(results);
+    console.log(`-------`);
+}
+
+function  shortenImageName(name) {
+    let chunks = name.split('/');
+    return chunks[chunks.length-1]
+}
+
+function  getSeveritFromImage(image, severity) {
+    let severitIndex = _.findIndex(image.counters, function (o) {
+        return o.severity === severity;
+    });
+
+    if (severitIndex === -1 ){
+        return 0;
+    }
+    return image.counters[severitIndex].count;
+}
+
+function getSeverityColor(severity) {
+    switch (severity) {
+        case 'CRITICAL': return "#a11f4c";
+        case 'MEDIUM': return "#f26c21";
+        case 'NOISSUES': return "#8BD2DC";
+        case 'NODATA': return "#777777";
+    }
+}
+
+function generateGroupSeverityData(counters) {
+
+    let data = {
+        domain: [],
+        range: []
+    };
+
+    let slist = severityList.reverse();
+    // calculate sum severity for group
+    let severitySum = 0;
+    for(let i=0;i<slist.length;i++){
+        severitySum += counters[slist[i]]
+    }
+    console.log('[] severity sum is ' + severitySum);
+;
+    for(let i=0;i<slist.length;i++){
+        if(counters[slist[i]] >0){
+            const ratio = ((counters[slist[i]])  / severitySum);
+            data.domain.push(ratio.toFixed(2));
+            data.range.push(getSeverityColor(slist[i]));
+        }
+    }
+    return data;
+}
+
+function parseSeverities(image) {
+
+    //console.log(image);
+    const severity_critical =  getSeveritFromImage(image, "CRITICAL");
+    const severity_high = getSeveritFromImage(image, "HIGH");
+    const severity_medium = getSeveritFromImage(image, "MEDIUM");
+    const severity_low = getSeveritFromImage(image, "LOW");
+
+    window.counters["CRITICAL"] += severity_critical + severity_high;  // these two combined
+    window.counters["MEDIUM"] += severity_medium;
+    window.counters["NOISSUES"] += severity_low;
+
+    if(image.scanResult === "Failed") {
+        window.counters["NODATA"] += 1;
+        return "No Data";
+    }
+    // no data
+    if ((severity_critical + severity_high + severity_medium + severity_low) == 0) {
+//        window.counters["NOISSUES"] += 1;
+        return "No Issues"
+    }
+
+    let results = [];
+    if(severity_critical>0) {
+        results.push("<b>" + severity_critical + "</b> Critical");
+    }
+    if(severity_high>0) {
+        results.push("<b>" + severity_high + "</b> High");
+    }
+    if(severity_medium>0) {
+        results.push("<b>" + severity_medium + "</b> Medium");
+    }
+    if(severity_low>0) {
+        results.push("<b>" + severity_low + "</b> Low");
+    }
+    return results.join(", ")
+}
+let bars = [];
+
+function getBar(id) {
+    const barId = 'bar' + id;
+    bars.push(barId);
+    let barHtml = '<div style="width:200px;height:10px;float:right;margin-right: 30px;" id="'+ barId + '"></div>';
+
+    /*
+    let barHtml = '<div class="status-bar">';
+    barHtml += ' <div class="status">';
+    barHtml += '  <div class="failing" style="width: 20px;">';
+    barHtml += '   <div class="warning" style="width: 30px;">';
+    barHtml += '    <div class="passing" style="width: 40px;"></div>';
+    barHtml += '   </div>';
+    barHtml += '  </div>';
+    barHtml += ' </div>';
+    barHtml += '</div>';
+     */
+    return barHtml;
 }
 
 
@@ -213,9 +400,4 @@ function setupOverview() {
     setupChart();
     createAttributeGroup();
     setListOfItemsByGroup();
-}
-
-function setupGroups() {
-//        var newDiv = document.createElement('div');
-//        $(this).append(newDiv);
 }
