@@ -271,7 +271,7 @@ function setListOfItemsByGroup() {
         results[i].barId = 'bar' + i;
 
         let imagehtml = '<div>';
-        imagehtml += getBar(i);
+        imagehtml += getBar(i, window.counters);
         imagehtml += '<h4>' + resultGroup.title +  '(' + resultGroup.images.length  + ')</h4>';
         imagehtml += sublist;
         imagehtml += '</div>';
@@ -355,7 +355,7 @@ function parseSeverities(image) {
     }
     // no data
     if ((severity_critical + severity_high + severity_medium + severity_low) == 0) {
-//        window.counters["NOISSUES"] += 1;
+        window.counters["NOISSUES"] += 1;
         return "No Issues"
     }
 
@@ -376,22 +376,42 @@ function parseSeverities(image) {
 }
 let bars = [];
 
-function getBar(id) {
+function getBar(id, counters) {
     const barId = 'bar' + id;
     bars.push(barId);
-    let barHtml = '<div style="width:200px;height:10px;float:right;margin-right: 30px;" id="'+ barId + '"></div>';
+    //let barHtml = '<div style="width:200px;height:10px;float:right;margin-right: 30px;" id="'+ barId + '"></div>';
 
     /*
+    let counters = {
+        "CRITICAL": 0,      //failing
+        "MEDIUM": 0,        //warning
+        "NOISSUES": 0,      //passing
+        "NODATA": 0
+    }*/
+
+    // get the total number of severities
+    let severitySum = 0;
+    for(let i=0;i<severityList.length;i++){
+        severitySum += counters[severityList[i]]
+    }
+
+    const failingSum = counters["CRITICAL"] * 200 / severitySum;
+    const warningSum = counters["MEDIUM"] * 200 / severitySum;
+    const passingSum  = (counters["NOISSUES"] + counters["NODATA"]) * 200 / severitySum;
+
+    const warningWidth = 200 - failingSum;
+    const passingWidth = 200 - failingSum - warningSum;
+
     let barHtml = '<div class="status-bar">';
     barHtml += ' <div class="status">';
-    barHtml += '  <div class="failing" style="width: 20px;">';
-    barHtml += '   <div class="warning" style="width: 30px;">';
-    barHtml += '    <div class="passing" style="width: 40px;"></div>';
+    barHtml += '  <div class="failing">';
+    barHtml += '   <div class="warning" style="width: '+ warningWidth +'px;">';
+    barHtml += '    <div class="passing" style="width: '+ passingWidth +'px;"></div>';
     barHtml += '   </div>';
     barHtml += '  </div>';
     barHtml += ' </div>';
     barHtml += '</div>';
-     */
+
     return barHtml;
 }
 
