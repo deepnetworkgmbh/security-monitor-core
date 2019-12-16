@@ -259,9 +259,21 @@ function setListOfItemsByGroup() {
 
         let sublist = `<ul>`;
         for(let j=0;j<resultGroup.images.length;j++) {
+
+            const description = humanReadableDescription(resultGroup.images[j].description);
+            const groupChecked = description.length > 0 ? 'checked' : '';
             sublist += '<li>';
-            sublist += '<div style="float:right;">' + parseSeverities(resultGroup.images[j]) + '</div>';
-            sublist += '<div class="imagename">' + shortenImageName(resultGroup.images[j].image) + '</div>';
+            sublist += ' <div style="float:right;">' + parseSeverities(resultGroup.images[j]) + '</div>';
+            sublist += ' <input type="checkbox" id="target' + i + 'sub' + j + '" ' + groupChecked + ' />';
+            sublist += ' <label for="target' + i + 'sub' + j + '">';
+            sublist += shortenImageName(resultGroup.images[j].image);
+            sublist += ' </label>';
+
+            sublist += ' <ul>';
+            sublist += '  <li>';
+            sublist += description;
+            sublist += '  </li><div style="clear:both;"></div>';
+            sublist += ' </ul>';
             sublist += '</li>';
         }
         sublist += '</ul>';
@@ -272,8 +284,19 @@ function setListOfItemsByGroup() {
 
         let imagehtml = '<div>';
         imagehtml += getBar(i, window.counters);
-        imagehtml += '<h4>' + resultGroup.title +  '(' + resultGroup.images.length  + ')</h4>';
+
+        imagehtml += '<ul>';
+        imagehtml += ' <li>';
+        imagehtml += '  <input type="checkbox" id="target' + i + '" checked/>';
+        imagehtml += '  <label for="target' + i + '">';
+        imagehtml += resultGroup.title +  '(' + resultGroup.images.length  + ')';
+        imagehtml += '  </label>';
+
         imagehtml += sublist;
+
+        imagehtml += ' </li>';
+        imagehtml += '</ul>';
+
         imagehtml += '</div>';
 
         $("#results").append(imagehtml);
@@ -285,6 +308,24 @@ function setListOfItemsByGroup() {
     console.log(`-------`);
     console.log(results);
     console.log(`-------`);
+}
+
+function humanReadableDescription(str) {
+
+    //\u001b[0m\terror in image scan: failed to analyze image: failed to extract files: failed to create the registry client:
+    //Get https://aksrepos.azurecr.io/v2/:
+    //http: non-successful response (status=401 body=\"{\\\"errors\\\":[{\\\"code\\\":\\\"UNAUTHORIZED\\\",
+    //\\\"message\\\":\\\"authentication required\\\",\\\"detail\\\":null}]}\\n\")
+    if(str.search('error in image scan') !== -1 && str.search('authentication required') !== -1) {
+
+        str = "<div>";
+        str += "<i class=\"fas fa-exclamation-triangle warning-icon\"></i>";
+        str += "<div style='float:left;'>Failed to analyze image: authentication required.</div>";
+        str += "</div>";
+    }
+
+    return str;
+
 }
 
 function  shortenImageName(name) {
