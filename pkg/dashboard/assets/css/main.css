@@ -113,7 +113,7 @@ h1.image-name {
   font-size:12px;
   float:left;
   margin-top:4px;
-  margin-right: 2px;
+  margin-right: 5px;
 }
 
 .noissues-icon {
@@ -121,7 +121,7 @@ h1.image-name {
   font-size:12px;
   float:left;
   margin-top:4px;
-  margin-right: 2px;
+  margin-right: 5px;
 }
 
 .nodata-icon {
@@ -129,5 +129,5 @@ h1.image-name {
   font-size:12px;
   float:left;
   margin-top:4px;
-  margin-right: 2px;
+  margin-right: 5px;
 }
