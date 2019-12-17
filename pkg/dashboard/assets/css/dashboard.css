@@ -329,10 +329,16 @@ a.more-info:hover {
   float: left;
 }
 
+.status .nodata {
+  background-color: #aaa;
+  float: left;
+}
+
 .status .failing {
   background-color: #a11f4c;
   width: 100%;
 }
+
 
 @keyframes fadeIn {
   0% {opacity: 0;}

@@ -208,8 +208,6 @@ function createAttributeGroup() {
 function setListOfItemsByGroup() {
 
     const groupBy = $("#group-by-dropdown").val();
-    //console.log(`[] grouping by `+ groupBy);
-
 
     let results = [];
 
@@ -241,9 +239,14 @@ function setListOfItemsByGroup() {
             // add existing image under group
             results[imageIndex].images.push(image);
         }
-
     }
 
+    results = _.sortBy(results, 'name');
+    
+    // sort result groups by severity
+    for(let i=0;i<results.length;i++) {
+        results[i].images = _.sortBy(results[i].images, 'scanResult');
+    }
 
     // render images
     $("#results").empty();
@@ -256,6 +259,11 @@ function setListOfItemsByGroup() {
             "NOISSUES": 0,
             "NODATA": 0
         }
+        let namespaceCounters = {
+            failing: 0,
+            passing: 0,
+            nodata: 0,
+        }
 
         let sublist = `<ul>`;
         for(let j=0;j<resultGroup.images.length;j++) {
@@ -263,10 +271,13 @@ function setListOfItemsByGroup() {
             sublist += '<li>';
             sublist += ' <div style="float:right;">' + rowText + '</div>';
             if(rowText === 'No Issues') {
+                namespaceCounters.passing +=1;
                 sublist += '<i class="fas fa-check noissues-icon"></i>';
             }else if (rowText === 'No Data') {
+                namespaceCounters.nodata +=1;
                 sublist += '<i class="fas fa-times nodata-icon"></i>';
             }else {
+                namespaceCounters.failing +=1;
                 sublist += '<i class="fas fa-exclamation-triangle warning-icon"></i>';
             }
             sublist += shortenImageName(resultGroup.images[j].image);
@@ -279,7 +290,7 @@ function setListOfItemsByGroup() {
         results[i].barId = 'bar' + i;
 
         let imagehtml = '<div>';
-        imagehtml += getBar(i, window.counters);
+        imagehtml += getBar(i, namespaceCounters);
 
         imagehtml += '<ul>';
         imagehtml += ' <li>';
@@ -395,25 +406,23 @@ function parseSeverities(image) {
 }
 let bars = [];
 
-function getBar(id, counters) {
+function getBar(id, namespaceCounters) {
     const barId = 'bar' + id;
     bars.push(barId);
 
     // get the total number of severities
-    let severitySum = 0;
-    for(let i=0;i<severityList.length;i++){
-        severitySum += counters[severityList[i]]
-    }
+    let severitySum = namespaceCounters.passing + namespaceCounters.nodata + namespaceCounters.failing;
 
-    const failingSum = counters["CRITICAL"] * 200 / severitySum;
-    const warningSum = counters["MEDIUM"] * 200 / severitySum;
-    const warningWidth = 200 - failingSum;
-    const passingWidth = 200 - failingSum - warningSum;
+    const failingSum = namespaceCounters.failing * 200 / severitySum;
+    const nodataSum = namespaceCounters.nodata * 200 / severitySum;
+
+    const nodataWidth = 200 - failingSum;
+    const passingWidth = 200 - failingSum - nodataSum;
 
     let barHtml = '<div class="status-bar">';
     barHtml += ' <div class="status">';
     barHtml += '  <div class="failing">';
-    barHtml += '   <div class="warning" style="width: '+ warningWidth +'px;">';
+    barHtml += '   <div class="nodata" style="width: '+ nodataWidth +'px;">';
     barHtml += '    <div class="passing" style="width: '+ passingWidth +'px;"></div>';
     barHtml += '   </div>';
     barHtml += '  </div>';
