@@ -259,21 +259,17 @@ function setListOfItemsByGroup() {
 
         let sublist = `<ul>`;
         for(let j=0;j<resultGroup.images.length;j++) {
-
-            const description = humanReadableDescription(resultGroup.images[j].description);
-            const groupChecked = description.length > 0 ? 'checked' : '';
+            const rowText = parseSeverities(resultGroup.images[j]);
             sublist += '<li>';
-            sublist += ' <div style="float:right;">' + parseSeverities(resultGroup.images[j]) + '</div>';
-            sublist += ' <input type="checkbox" id="target' + i + 'sub' + j + '" ' + groupChecked + ' />';
-            sublist += ' <label for="target' + i + 'sub' + j + '">';
+            sublist += ' <div style="float:right;">' + rowText + '</div>';
+            if(rowText === 'No Issues') {
+                sublist += '<i class="fas fa-check noissues-icon"></i>';
+            }else if (rowText === 'No Data') {
+                sublist += '<i class="fas fa-times nodata-icon"></i>';
+            }else {
+                sublist += '<i class="fas fa-exclamation-triangle warning-icon"></i>';
+            }
             sublist += shortenImageName(resultGroup.images[j].image);
-            sublist += ' </label>';
-
-            sublist += ' <ul>';
-            sublist += '  <li>';
-            sublist += description;
-            sublist += '  </li><div style="clear:both;"></div>';
-            sublist += ' </ul>';
             sublist += '</li>';
         }
         sublist += '</ul>';
@@ -308,24 +304,6 @@ function setListOfItemsByGroup() {
     console.log(`-------`);
     console.log(results);
     console.log(`-------`);
-}
-
-function humanReadableDescription(str) {
-
-    //\u001b[0m\terror in image scan: failed to analyze image: failed to extract files: failed to create the registry client:
-    //Get https://aksrepos.azurecr.io/v2/:
-    //http: non-successful response (status=401 body=\"{\\\"errors\\\":[{\\\"code\\\":\\\"UNAUTHORIZED\\\",
-    //\\\"message\\\":\\\"authentication required\\\",\\\"detail\\\":null}]}\\n\")
-    if(str.search('error in image scan') !== -1 && str.search('authentication required') !== -1) {
-
-        str = "<div>";
-        str += "<i class=\"fas fa-exclamation-triangle warning-icon\"></i>";
-        str += "<div style='float:left;'>Failed to analyze image: authentication required.</div>";
-        str += "</div>";
-    }
-
-    return str;
-
 }
 
 function  shortenImageName(name) {
@@ -420,15 +398,6 @@ let bars = [];
 function getBar(id, counters) {
     const barId = 'bar' + id;
     bars.push(barId);
-    //let barHtml = '<div style="width:200px;height:10px;float:right;margin-right: 30px;" id="'+ barId + '"></div>';
-
-    /*
-    let counters = {
-        "CRITICAL": 0,      //failing
-        "MEDIUM": 0,        //warning
-        "NOISSUES": 0,      //passing
-        "NODATA": 0
-    }*/
 
     // get the total number of severities
     let severitySum = 0;
@@ -438,8 +407,6 @@ function getBar(id, counters) {
 
     const failingSum = counters["CRITICAL"] * 200 / severitySum;
     const warningSum = counters["MEDIUM"] * 200 / severitySum;
-    const passingSum  = (counters["NOISSUES"] + counters["NODATA"]) * 200 / severitySum;
-
     const warningWidth = 200 - failingSum;
     const passingWidth = 200 - failingSum - warningSum;
 

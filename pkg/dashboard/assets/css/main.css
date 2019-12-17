@@ -115,3 +115,19 @@ h1.image-name {
   margin-top:4px;
   margin-right: 2px;
 }
+
+.noissues-icon {
+  color:green;
+  font-size:12px;
+  float:left;
+  margin-top:4px;
+  margin-right: 2px;
+}
+
+.nodata-icon {
+  color:gray;
+  font-size:12px;
+  float:left;
+  margin-top:4px;
+  margin-right: 2px;
+}
