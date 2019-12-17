@@ -185,7 +185,7 @@ func GetRouter(c config.Configuration, port int, basePath string) *mux.Router {
 		imageScanDetailsHandler(w, r, c, basePath, &scanResult)
 	})
 
-	router.HandleFunc("/overview", func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("/image-overview", func(w http.ResponseWriter, r *http.Request) {
 		scanResult, err := kubeScanner.GetImageScansSummary()
 		if err != nil {
 			logrus.Error(err, "Failed to get container images scan summary")

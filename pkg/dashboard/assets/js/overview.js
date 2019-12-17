@@ -178,7 +178,6 @@ function createAttributeGroup() {
             const attribute = image.attributes[j];
             const chunk = attribute.split(':');
             const name = chunk[0];
-            const value = chunk[1];
             const attributeIndex = _.findIndex(groupBy,function(o) { return o.name == name; });
 
             if (attributeIndex === -1) {
@@ -193,19 +192,17 @@ function createAttributeGroup() {
         }
     }
     groupBy = _.sortBy(groupBy, 'count').reverse();
-    //console.log(groupBy);
 
     $("#group-by-dropdown").empty();
     for(let i=0;i<groupBy.length;i++){
         const optionName = groupBy[i].name + ' (' + groupBy[i].count + ')';
         const optionValue = groupBy[i].name;
-
         $("#group-by-dropdown").append(new Option(optionName, optionValue));
     }
     $("#group-by-dropdown").val(defaultGroupBy);
 }
 
-function setListOfItemsByGroup() {
+function setListOfItemsByGroup(filter) {
 
     const groupBy = $("#group-by-dropdown").val();
 
@@ -215,29 +212,29 @@ function setListOfItemsByGroup() {
     for(let i=0;i<window.auditData.Results.length;i++) {
         const image = window.auditData.Results[i];
 
-        const attributeIndex = _.findIndex(image.attributes, function (o) {
-            return o.startsWith(groupBy+ ':');
-        });
+        for(let j=0;j<image.attributes.length;j++) {
+            const attribute = image.attributes[j];
 
-        // if image does not have the attribute, skip
-        if (attributeIndex === -1) continue;
+            if(attribute.split(':')[0] === groupBy) {
 
-        const attributeValue = image.attributes[attributeIndex].split(':')[1];
+                const attributeValue = attribute.split(':')[1];
 
-        // check if the image with the attribute value exists under the group
-        const imageIndex = _.findIndex(results, function (o) {
-            return o.title === attributeValue;
-        });
+                // check if the image with the attribute value exists under the group
+                const imageIndex = _.findIndex(results, function (o) {
+                    return o.title === attributeValue;
+                });
 
-        if (imageIndex === -1) {
-            // create new image under group
-            results.push({
-                title: attributeValue,
-                images: [image]
-            });
-        }else {
-            // add existing image under group
-            results[imageIndex].images.push(image);
+                if (imageIndex === -1) {
+                    // create new image under group
+                    results.push({
+                        title: attributeValue,
+                        images: [image]
+                    });
+                }else {
+                    // add existing image under group
+                    results[imageIndex].images.push(image);
+                }
+            }
         }
     }
 
@@ -282,6 +279,9 @@ function setListOfItemsByGroup() {
         let sublist = `<ul>`;
         for(let j=0;j<resultGroup.images.length;j++) {
             const rowText = resultGroup.images[j].rowText;
+            const shortImageName = shortenImageName(resultGroup.images[j].image);
+            let link = '';
+
             sublist += '<li>';
             sublist += ' <div style="float:right;">' + rowText + '</div>';
             if(rowText === 'No Issues') {
@@ -290,11 +290,23 @@ function setListOfItemsByGroup() {
             }else if (rowText === 'No Data') {
                 namespaceCounters.nodata +=1;
                 sublist += '<i class="fas fa-times nodata-icon"></i>';
+
+                link += '<a class="more-info">';
+                link += ' <span class="tool" data-tip="Failed to scan this image">';
+                link += '  <i class="far fa-question-circle"></i>';
+                link += ' </span>';
+                link += '</a>';
             }else {
                 namespaceCounters.failing +=1;
                 sublist += '<i class="fas fa-exclamation-triangle warning-icon"></i>';
+                link += '<a href="/image/' +  shortImageName + '" class="more-info">';
+                link += ' <span class="tool" data-tip="Click to see detailed image analysis">';
+                link += '  <i class="far fa-question-circle"></i>';
+                link += ' </span>';
+                link += '</a>';
             }
-            sublist += shortenImageName(resultGroup.images[j].image);
+            sublist += shortImageName;
+            sublist += link;
             sublist += '</li>';
         }
         sublist += '</ul>';
@@ -303,6 +315,8 @@ function setListOfItemsByGroup() {
         results[i].severityBarData = generateGroupSeverityData(window.counters);
         results[i].barId = 'bar' + i;
 
+        if(filter && filter.length > 1 && resultGroup.title.indexOf(filter) === -1) continue;
+
         let imagehtml = '<div>';
         imagehtml += getBar(i, namespaceCounters);
 
@@ -310,7 +324,12 @@ function setListOfItemsByGroup() {
         imagehtml += ' <li>';
         imagehtml += '  <input type="checkbox" id="target' + i + '" checked/>';
         imagehtml += '  <label for="target' + i + '">';
-        imagehtml += resultGroup.title +  '(' + resultGroup.images.length  + ')';
+        if(filter && filter.length > 1){
+            imagehtml += resultGroup.title.replace(filter, '<span class="highlight">' + filter + '</span>');
+            imagehtml += '(' + resultGroup.images.length  + ')';
+        }else {
+            imagehtml += resultGroup.title +  '(' + resultGroup.images.length  + ')';
+        }
         imagehtml += '  </label>';
 
         imagehtml += sublist;
@@ -329,6 +348,12 @@ function setListOfItemsByGroup() {
     console.log(`-------`);
     console.log(results);
     console.log(`-------`);
+}
+
+function search(box) {
+    let value = box.value;
+    console.log(value);
+    setListOfItemsByGroup(value);
 }
 
 function  shortenImageName(name) {

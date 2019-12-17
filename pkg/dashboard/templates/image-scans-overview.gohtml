@@ -7,6 +7,7 @@
     </script>
     {{ template "head" . }}
     <link rel="stylesheet" href="static/css/scan-details.css">
+    <link rel="stylesheet" href="static/css/tooltip.css">
     <script src="https://d3js.org/d3.v4.js"></script>
     <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
     <script type="text/javascript" src="static/js/underscore.js"></script>
@@ -42,6 +43,12 @@
                 <div style="float:right;">
                     Group By
                     <select id="group-by-dropdown" onchange="setListOfItemsByGroup()"></select>
+                </div>
+                <div style="float:left;">
+                    <div>
+                        <input type="search" class="searchbox" onkeyup="search(this)">
+                        <i class="fas fa-search search-icon"></i>
+                    </div>
                 </div>
             </div>
             <div style="border-top:solid 1px gray;margin-top:25px;padding:10px;">

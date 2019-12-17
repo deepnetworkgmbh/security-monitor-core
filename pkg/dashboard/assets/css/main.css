@@ -131,3 +131,26 @@ h1.image-name {
   margin-top:4px;
   margin-right: 5px;
 }
+
+.searchbox {
+  width: 380px;
+  height: 25px;
+  border: solid 1px #ccc;
+  border-radius: 20px;
+  padding-left: 10px;
+  color:#444;
+  float:left;
+}
+
+.search-icon{
+  float:left;
+  display: revert;
+  margin-left:-26px;
+  margin-top:5px;
+  color:#ccc;
+}
+
+.highlight {
+  color:black;
+  background-color: yellow;
+}
