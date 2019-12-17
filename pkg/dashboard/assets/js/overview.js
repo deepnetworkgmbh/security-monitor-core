@@ -228,7 +228,8 @@ function setListOfItemsByGroup(filter) {
                     // create new image under group
                     results.push({
                         title: attributeValue,
-                        images: [image]
+                        images: [image],
+                        order: 255
                     });
                 }else {
                     // add existing image under group
@@ -254,13 +255,18 @@ function setListOfItemsByGroup(filter) {
             resultGroup.images[j].rowText = rowText;
             if(rowText === 'No Issues') {
                 resultGroup.images[j].order = 1;
+                if(resultGroup.order>1) resultGroup.order=1;
             }else if (rowText === 'No Data') {
                 resultGroup.images[j].order = 2;
+                if(resultGroup.order>2) resultGroup.order=2;
             }else {
                 resultGroup.images[j].order = 0;
+                if(resultGroup.order>0) resultGroup.order=0;
             }
         }
     }
+
+    results = _.sortBy(results, 'order');
 
     for(let i=0;i<results.length;i++) {
         results[i].images = _.sortBy(results[i].images, 'order');
