@@ -242,23 +242,37 @@ function setListOfItemsByGroup() {
     }
 
     results = _.sortBy(results, 'name');
-    
+
     // sort result groups by severity
     for(let i=0;i<results.length;i++) {
-        results[i].images = _.sortBy(results[i].images, 'scanResult');
-    }
-
-    // render images
-    $("#results").empty();
-    for(let i=0;i<results.length;i++){
         const resultGroup = results[i];
-
         window.counters = {
             "CRITICAL": 0,
             "MEDIUM": 0,
             "NOISSUES": 0,
             "NODATA": 0
         }
+        for(let j=0;j<resultGroup.images.length;j++) {
+            const rowText = parseSeverities(resultGroup.images[j]);
+            resultGroup.images[j].rowText = rowText;
+            if(rowText === 'No Issues') {
+                resultGroup.images[j].order = 1;
+            }else if (rowText === 'No Data') {
+                resultGroup.images[j].order = 2;
+            }else {
+                resultGroup.images[j].order = 0;
+            }
+        }
+    }
+
+    for(let i=0;i<results.length;i++) {
+        results[i].images = _.sortBy(results[i].images, 'order');
+    }
+
+    // render images
+    $("#results").empty();
+    for(let i=0;i<results.length;i++){
+        const resultGroup = results[i];
         let namespaceCounters = {
             failing: 0,
             passing: 0,
@@ -267,7 +281,7 @@ function setListOfItemsByGroup() {
 
         let sublist = `<ul>`;
         for(let j=0;j<resultGroup.images.length;j++) {
-            const rowText = parseSeverities(resultGroup.images[j]);
+            const rowText = resultGroup.images[j].rowText;
             sublist += '<li>';
             sublist += ' <div style="float:right;">' + rowText + '</div>';
             if(rowText === 'No Issues') {
