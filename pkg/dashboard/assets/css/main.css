@@ -77,19 +77,27 @@ body {
 }
 
 .severity-CRITICAL {
-  color: red;
+  color: #a11f4c;
 }
 
 .severity-HIGH {
-  color: orangered;
+  color: #ff4500;
 }
 
 .severity-MEDIUM {
-  color: saddlebrown;
+  color: #f26c21;
 }
 
 .severity-LOW {
-  color: green;
+  color: #008000;
+}
+
+.severity-NOISSUES {
+  color: #8BD2DC;
+}
+
+.severity-NODATA {
+  color: #777777;
 }
 
 h1.image-name {
@@ -98,4 +106,51 @@ h1.image-name {
   word-break: normal;
   height: 40px;
   line-height: 40px;
+}
+
+.warning-icon {
+  color:red;
+  font-size:12px;
+  float:left;
+  margin-top:4px;
+  margin-right: 5px;
+}
+
+.noissues-icon {
+  color:green;
+  font-size:12px;
+  float:left;
+  margin-top:4px;
+  margin-right: 5px;
+}
+
+.nodata-icon {
+  color:gray;
+  font-size:12px;
+  float:left;
+  margin-top:4px;
+  margin-right: 5px;
+}
+
+.searchbox {
+  width: 380px;
+  height: 25px;
+  border: solid 1px #ccc;
+  border-radius: 20px;
+  padding-left: 10px;
+  color:#444;
+  float:left;
+}
+
+.search-icon{
+  float:left;
+  display: revert;
+  margin-left:-26px;
+  margin-top:5px;
+  color:#ccc;
+}
+
+.highlight {
+  color:black;
+  background-color: yellow;
 }

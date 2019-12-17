@@ -17,13 +17,27 @@ type templateData struct {
 
 // scanTemplateData is passed to the image-scan-details HTML template
 type scanTemplateData struct {
-	BasePath string
-	Config   config.Configuration
-	ImageTag string
-	ScanResult string
+	BasePath    string
+	Config      config.Configuration
+	ImageTag    string
+	ScanResult  string
 	Description string
-	UsedIn []imageUsage
+	UsedIn      []imageUsage
 	ScanTargets []imageScanTarget
+}
+
+type scanOverviewData struct {
+	BasePath     string
+	Config       config.Configuration
+	Results      []scanners.ContainerImageScanResult
+	ImagesGroups []ImagesGroup
+	JSON         template.JS
+}
+
+type ImagesGroup struct {
+	Count       int
+	Title       string
+	Description string
 }
 
 type imageUsage struct {
@@ -78,4 +92,67 @@ func severityWeigh(s string) int {
 	default:
 		return 1000
 	}
+}
+
+func calculateImageSummaries(scanResults []scanners.ContainerImageScanResult) []ImagesGroup {
+	// array to enforce ordering
+	counters := [4]int{0, 0, 0, 0}
+
+	for _, s := range scanResults {
+		switch s.ScanResult {
+		case "Succeeded":
+			if len(s.Counters) != 0 {
+				isCritical := false;
+				for _, counter := range s.Counters {
+					if counter.Severity == "CRITICAL" || counter.Severity == "HIGH" {
+						isCritical = true
+						break
+					}
+				}
+
+				if isCritical {
+					counters[0]++
+				} else {
+					counters[1]++
+				}
+			} else {
+				counters[2]++
+			}
+		default:
+			counters[3]++
+		}
+	}
+
+	result := make([]ImagesGroup, 0)
+
+	if counters[0] > 0 {
+		result = append(result, ImagesGroup{
+			Count:       counters[0],
+			Title:       "CRITICAL",
+			Description: "with critical/high severity issues",
+		})
+	}
+	if counters[1] > 0 {
+		result = append(result, ImagesGroup{
+			Count:       counters[1],
+			Title:       "MEDIUM",
+			Description: "with medium/low severity issues",
+		})
+	}
+	if counters[2] > 0 {
+		result = append(result, ImagesGroup{
+			Count:       counters[2],
+			Title:       "NOISSUES",
+			Description: "without issues",
+		})
+	}
+	if counters[3] > 0 {
+		result = append(result, ImagesGroup{
+			Count:       counters[3],
+			Title:       "NODATA",
+			Description: "no data",
+		})
+	}
+
+	return result
 }

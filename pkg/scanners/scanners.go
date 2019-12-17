@@ -51,3 +51,20 @@ func (s *Scanners) GetImageScanResult(image string) (scanResult ImageScanResult,
 
 	return
 }
+
+// returns container image scan summary
+func (s *Scanners) GetImageScansSummary() (scanSummary ContainerImageScansSummary, err error) {
+	scanResultURL := fmt.Sprintf("%s/api/container-images/", s.ServiceURL)
+
+	resp, err := http.Get(scanResultURL)
+	if err != nil {
+		logrus.Errorf("Error requesting image scan result %v", err)
+		return
+	}
+
+	defer resp.Body.Close()
+
+	json.NewDecoder(resp.Body).Decode(&scanSummary)
+
+	return
+}

@@ -49,6 +49,8 @@ const (
 	CheckDetailsTemplateName = "check-details.gohtml"
 	// ImageScanDetailsTemplateName is a page for rendering a single image scan details
 	ImageScanDetailsTemplateName = "image-scan-details.gohtml"
+	// Container Image Vulnerabilities Scans general overview
+	ImageScansOverviewTemplateName = "image-scans-overview.gohtml"
 )
 
 var (
@@ -181,6 +183,15 @@ func GetRouter(c config.Configuration, port int, basePath string) *mux.Router {
 		}
 
 		imageScanDetailsHandler(w, r, c, basePath, &scanResult)
+	})
+
+	router.HandleFunc("/image-overview", func(w http.ResponseWriter, r *http.Request) {
+		scanResult, err := kubeScanner.GetImageScansSummary()
+		if err != nil {
+			logrus.Error(err, "Failed to get container images scan summary")
+			return
+		}
+		imageScansOverviewHandler(w,r,c, basePath, &scanResult)
 	})
 
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -325,4 +336,39 @@ func DetailsHandler(w http.ResponseWriter, r *http.Request, category string, bas
 		BasePath: basePath,
 	}
 	writeTemplate(tmpl, &data, w)
+}
+
+func imageScansOverviewHandler(w http.ResponseWriter, r *http.Request, c config.Configuration, basePath string, scan *scanners.ContainerImageScansSummary) {
+	templateFileNames := []string{
+		HeadTemplateName,
+		NavbarTemplateName,
+		ImageScansOverviewTemplateName,
+		FooterTemplateName,
+	}
+	tmpl := template.New("image-scans-overview")
+	tmpl, err := parseTemplateFiles(tmpl, templateFileNames)
+	if err != nil {
+		logrus.Printf("Error getting template data %v", err)
+		http.Error(w, "Error getting template data", 500)
+		return
+	}
+
+	data := scanOverviewData{
+		BasePath:     basePath,
+		Config:       c,
+		Results:      scan.Images,
+		ImagesGroups: calculateImageSummaries(scan.Images),
+	}
+
+	// serialize overall severity counter data for browser
+	jsonData, err := json.Marshal(data)
+	data.JSON = template.JS(jsonData)
+
+	buf := &bytes.Buffer{}
+	err = tmpl.Execute(buf, data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	buf.WriteTo(w)
 }
