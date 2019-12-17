@@ -295,11 +295,11 @@ function setListOfItemsByGroup(filter) {
                 namespaceCounters.passing +=1;
                 sublist += '<i class="fas fa-check noissues-icon"></i>';
 
-                // link += '<a href="/image/' +  longImageName + '" class="more-info">';
-                // link += ' <span class="tool" data-tip="Click to see detailed image analysis">';
-                // link += '  <i class="far fa-question-circle"></i>';
-                // link += ' </span>';
-                // link += '</a>';
+                link += '<a href="/image/' +  longImageName + '" class="more-info">';
+                link += ' <span class="tool" data-tip="Click to see detailed image analysis">';
+                link += '  <i class="far fa-question-circle"></i>';
+                link += ' </span>';
+                link += '</a>';
 
             }else if (rowText === 'No Data') {
                 namespaceCounters.nodata +=1;
