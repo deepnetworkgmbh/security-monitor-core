@@ -103,7 +103,7 @@ body {
 h1.image-name {
   overflow: hidden;
   text-overflow: ellipsis;
-  word-break: normal;
+  word-break: keep-all;
   height: 40px;
   line-height: 40px;
 }
