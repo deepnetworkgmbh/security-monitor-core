@@ -285,7 +285,8 @@ function setListOfItemsByGroup(filter) {
         let sublist = `<ul>`;
         for(let j=0;j<resultGroup.images.length;j++) {
             const rowText = resultGroup.images[j].rowText;
-            const shortImageName = shortenImageName(resultGroup.images[j].image);
+            const longImageName = resultGroup.images[j].image;
+            const shortImageName = shortenImageName(longImageName);
             let link = '';
 
             sublist += '<li>';
@@ -293,6 +294,13 @@ function setListOfItemsByGroup(filter) {
             if(rowText === 'No Issues') {
                 namespaceCounters.passing +=1;
                 sublist += '<i class="fas fa-check noissues-icon"></i>';
+
+                // link += '<a href="/image/' +  longImageName + '" class="more-info">';
+                // link += ' <span class="tool" data-tip="Click to see detailed image analysis">';
+                // link += '  <i class="far fa-question-circle"></i>';
+                // link += ' </span>';
+                // link += '</a>';
+
             }else if (rowText === 'No Data') {
                 namespaceCounters.nodata +=1;
                 sublist += '<i class="fas fa-times nodata-icon"></i>';
@@ -305,7 +313,8 @@ function setListOfItemsByGroup(filter) {
             }else {
                 namespaceCounters.failing +=1;
                 sublist += '<i class="fas fa-exclamation-triangle warning-icon"></i>';
-                link += '<a href="/image/' +  shortImageName + '" class="more-info">';
+
+                link += '<a href="/image/' +  longImageName + '" class="more-info">';
                 link += ' <span class="tool" data-tip="Click to see detailed image analysis">';
                 link += '  <i class="far fa-question-circle"></i>';
                 link += ' </span>';
