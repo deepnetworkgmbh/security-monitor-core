@@ -39,6 +39,8 @@ const (
 	HeadTemplateName = "head.gohtml"
 	// NavbarTemplateName contains the navbar
 	NavbarTemplateName = "navbar.gohtml"
+	// NotFoundTemplateName contains the 404 page
+	NotFoundTemplateName = "notfound.gohtml"
 	// PreambleTemplateName contains an empty preamble that can be overridden
 	PreambleTemplateName = "preamble.gohtml"
 	// DashboardTemplateName contains the content of the dashboard
@@ -193,7 +195,7 @@ func GetRouter(c config.Configuration, port int, basePath string) *mux.Router {
 			logrus.Error(err, "Failed to get container images scan summary")
 			return
 		}
-		imageScansOverviewHandler(w,r,c, basePath, &scanResult)
+		imageScansOverviewHandler(w, r, c, basePath, &scanResult)
 	})
 
 	router.HandleFunc("/cluster-overview", func(w http.ResponseWriter, r *http.Request) {
@@ -202,9 +204,8 @@ func GetRouter(c config.Configuration, port int, basePath string) *mux.Router {
 			logrus.Error(err, "Failed to get cluster overview scan summary")
 			return
 		}
-		clusterScansOverviewHandler(w,r,c, basePath, &scanResult)
+		clusterScansOverviewHandler(w, r, c, basePath, &scanResult)
 	})
-
 
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" && r.URL.Path != basePath {
@@ -221,6 +222,11 @@ func GetRouter(c config.Configuration, port int, basePath string) *mux.Router {
 		MainHandler(w, r, c, auditData, basePath)
 
 	})
+
+	router.NotFoundHandler = router.
+		NewRoute().
+		HandlerFunc(func(w http.ResponseWriter, r *http.Request) { NotFoundHandler(w, r, basePath) }).
+		GetHandler()
 	return router
 }
 
@@ -316,6 +322,29 @@ func MainHandler(w http.ResponseWriter, r *http.Request, c config.Configuration,
 		http.Error(w, "Error getting template data", 500)
 		return
 	}
+	writeTemplate(tmpl, &data, w)
+}
+
+// NotFoundHandler creates 404 page
+func NotFoundHandler(w http.ResponseWriter, r *http.Request, basePath string) {
+	data := templateData{
+		BasePath:  basePath,
+	}
+
+	templateFileNames := []string{
+		HeadTemplateName,
+		NavbarTemplateName,
+		NotFoundTemplateName,
+		FooterTemplateName,
+	}
+	tmpl := template.New("not-found")
+	tmpl, err := parseTemplateFiles(tmpl, templateFileNames)
+	if err != nil {
+		logrus.Printf("Error getting template data %v", err)
+		http.Error(w, "Error getting template data", 500)
+		return
+	}
+
 	writeTemplate(tmpl, &data, w)
 }
 
