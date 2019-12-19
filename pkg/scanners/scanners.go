@@ -68,3 +68,18 @@ func (s *Scanners) GetImageScansSummary() (scanSummary ContainerImageScansSummar
 
 	return
 }
+
+func (s *Scanners) GetClusterOverviewSummary() (scanSummary KubeOverview, err error) {
+	scanResultURL := fmt.Sprintf("%s/api/kube/overview/", s.ServiceURL)
+
+	resp, err := http.Get(scanResultURL)
+	if err != nil {
+		logrus.Errorf("Error requesting cluster overview summary %v", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	json.NewDecoder(resp.Body).Decode(&scanSummary)
+
+	return
+}

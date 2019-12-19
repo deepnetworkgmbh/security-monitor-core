@@ -154,3 +154,83 @@ h1.image-name {
   color:black;
   background-color: yellow;
 }
+
+.chart-title {
+  text-align: center;
+  font-size: 10px;
+  margin-top: 5px;
+}
+
+svg > g > g:last-child { pointer-events: none }
+
+.tabulator-col-title {
+  text-align: center;
+}
+.tabulator-col[role=columnheader] {
+  border-bottom: solid 2px #acc91e;
+}
+
+.tblr-nodata  { color: gray }
+.tblr-error   { color: red }
+.tblr-warning { color: orange }
+.tblr-success { color: green }
+
+.context-menu {
+  position: absolute;
+  padding:2px;
+  border: solid 2px #ccc;
+  background-color: #eee;
+  border-radius: 2px;
+  width: 150px;
+  min-height: 40px;
+}
+
+.context-menu a {
+  font-size: 10px;
+  text-decoration: none;
+}
+
+.circular-chart {
+  display: block;
+  margin: 5px auto;
+  max-width: 80%;
+  max-height: 150px;
+}
+
+.circle-bg {
+  fill: none;
+  stroke: #eee;
+  stroke-width: 3.8;
+}
+
+.circle {
+  fill: none;
+  stroke-width: 2.8;
+  stroke-linecap: round;
+  animation: progress 1s ease-out forwards;
+}
+
+@keyframes progress {
+  0% {
+    stroke-dasharray: 0 100;
+  }
+}
+
+.circular-chart.orange .circle {
+  stroke: #ff9f00;
+}
+
+.circular-chart.green .circle {
+  stroke: #008800;     /* 4CC790 */;
+}
+
+.circular-chart.blue .circle {
+  stroke: #3c9ee5;
+}
+
+.percentage {
+  fill: #666;
+  font-family: sans-serif;
+  font-size: 0.5em;
+  text-anchor: middle;
+}

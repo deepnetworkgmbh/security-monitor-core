@@ -34,6 +34,19 @@ type scanOverviewData struct {
 	JSON         template.JS
 }
 
+type kubeOverviewData struct {
+	BasePath     string
+	Config       config.Configuration
+
+	Cluster             scanners.ClusterSum  	 `json:"cluster"`
+	CheckGroupSummary   []scanners.ResultSum 	 `json:"checkGroupSummary"`
+	NamespaceSummary    []scanners.ResultSum	 `json:"namespaceSummary"`
+	CheckResultsSummary scanners.ResultSum		 `json:"checkResultsSummary"`
+	Checks              []scanners.Check         `json:"checks"`
+
+	JSON         template.JS
+}
+
 type ImagesGroup struct {
 	Count       int
 	Title       string

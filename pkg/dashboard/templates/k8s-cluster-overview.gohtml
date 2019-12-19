@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+
+<head>
+  <script>
+    window.overviewData = {{ .JSON }};
+  </script>
+  {{ template "head" . }}
+  <link rel="stylesheet" href="static/css/scan-details.css">
+  <link rel="stylesheet" href="static/css/tooltip.css">
+  <link rel="stylesheet" href="static/js/tabulator.min.css">
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <script type="text/javascript" src="static/js/underscore.js"></script>
+  <script type="text/javascript" src="static/js/tabulator.min.js"></script>
+  <script type="text/javascript" src="static/js/cluster-overview.js"></script>
+</head>
+
+<body onload="pageLoaded()">
+<div class="navbar">
+  <div class="navbar-content">
+    <a href="/">
+      <img class="logo" src="static/images/polaris-logo.png" alt="Polaris" />
+    </a>
+  </div>
+</div>
+
+<div class="main-content" style="width:1024px;">
+  <div class="card details">
+    <div style="border-radius:5px;border:solid 1px #ddd;display: flex;flex-direction: row;">
+      <div style="flex:1;flex-grow: 1;display: flex;align-items: center;justify-content: center;">
+        <svg viewBox="0 0 36 36" class="circular-chart green">
+          <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          <path class="circle" stroke-dasharray="60, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          <text x="18" y="20.35" class="percentage">{{ .Cluster.Score }}%</text>
+        </svg>
+      </div>
+      <div style="flex:1;padding-left:10px;flex-grow: 2;">
+        <h4>Name: {{ .Cluster.Name }}</h4>
+        <h4>Grade: {{ .Cluster.Grade }}</h4>
+        <h4>Score: {{ .Cluster.Score }}%</h4>
+      </div>
+      <div style="flex:1;flex-grow: 2;">
+        <h4>Kubernetes Version: {{ .Cluster.Version }}</h4>
+        <h4>Nodes: {{ .Cluster.Nodes }}</h4>
+        <h4>Namespaces: {{ .Cluster.Namespaces }}</h4>
+        <h4>Pods: {{ .Cluster.Pods }}</h4>
+      </div>
+    </div>
+    <div style="border-radius:5px;border:solid 1px #ddd;margin-top:10px;display: flex;flex-direction: row;height:280px;align-content: space-around">
+      <div style="flex:1;width: 29%;">
+        <div style="margin-left: 10px;">
+          <div class="chart-title">by categories</div>
+          <div id="chart1"></div>
+        </div>
+      </div>
+      <div style="flex:1;width: 42%;">
+        <div>
+          <div class="chart-title">overall check result</div>
+          <div id="chart2"></div>
+        </div>
+      </div>
+      <div style="flex:1;width: 29%;">
+        <div>
+          <div class="chart-title">by namespace</div>
+          <div id="chart3"></div>
+        </div>
+      </div>
+    </div>
+    <div style="border-radius:5px;border:solid 1px #ddd;margin-top:10px;" id="data-table">
+
+    </div>
+  </div>
+</div>
+</body>
+</html>
