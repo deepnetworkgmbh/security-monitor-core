@@ -1,11 +1,21 @@
 {{define "navbar"}}
-  <div class="navbar">
-    <div class="navbar-content">
-      <a href="/">
-        <img class="logo" src="static/images/polaris-logo.png" alt="Polaris" />
-      </a>
-      <div class="navbar-right">
+  <nav class="flex items-center p-6 mx-auto">
+    <div class="flex items-center flex-shrink-0 text-blue-600 mr-6">
+      <i class="fas fa-shield-alt"></i>
+      <a href="/" class="font-semibold text-xl tracking-tight ml-2">Security Monitor</a>
+    </div>
+    <div class="flex items-center w-full block">
+      <div class="flex items-center text-sm">
+        <a href="/cluster-overview" class="block mt-4 lg:inline-block lg:mt-0 text-blue-600 hover:text-indigo-900 mr-4">
+          Cluster Overview
+        </a>
+        <a href="/image-overview" class="block mt-4 lg:inline-block lg:mt-0 text-blue-600 hover:text-indigo-900 mr-4">
+          Image Overview
+        </a>
+        <a href="/docs" class="block mt-4 lg:inline-block lg:mt-0 text-blue-600 hover:text-indigo-900">
+          Docs
+        </a>
       </div>
     </div>
-  </div>
+  </nav>
 {{end}}

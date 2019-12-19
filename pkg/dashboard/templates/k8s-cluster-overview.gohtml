@@ -16,15 +16,9 @@
 </head>
 
 <body onload="pageLoaded()">
-<div class="navbar">
-  <div class="navbar-content">
-    <a href="/">
-      <img class="logo" src="static/images/polaris-logo.png" alt="Polaris" />
-    </a>
-  </div>
-</div>
+{{ template "navbar" }}
 
-<div class="main-content" style="width:1024px;">
+<div class="main-content">
   <div class="card details">
     <div style="border-radius:5px;border:solid 1px #ddd;display: flex;flex-direction: row;">
       <div style="flex:1;flex-grow: 1;display: flex;align-items: center;justify-content: center;">
