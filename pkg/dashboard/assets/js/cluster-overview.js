@@ -2,6 +2,7 @@ let groupNames = ["No Data", "Error", "Warning", "Success"];
 let groupColors = ['gray', 'red', 'orange', 'green'];
 
 let menuElement = null;
+let table = null;
 
 function isHover(e) {
     return !!(e.querySelector(":hover") || e.parentNode.querySelector(":hover") === e);
@@ -40,7 +41,7 @@ function openContextmenu(e) {
 }
 
 function drawStackedChart(jdata, elementId) {
-
+    if(jdata.length === 0) return;
     let rawdata = [
         ["Severity", "No Data", "Error", "Warning", "Success"]
     ];
@@ -110,7 +111,7 @@ function drawPieChart(jdata, elementId) {
             2:{color: groupColors[2]},
             3:{color: groupColors[3]}
         },
-        pieHole: 0.4,
+        pieHole: 0.5,
         chartArea: {'width': '100%', 'height': '70%'},
         legend: {
             position: 'top',
@@ -127,10 +128,15 @@ function drawPieChart(jdata, elementId) {
 
 function drawTable(jdata, elementId) {
 
+    let viewHeight = (document.compatMode === "CSS1Compat") ?
+        document.documentElement.clientHeight :
+        document.body.clientHeight;
+    let tableHeight = viewHeight-580;
+    if(tableHeight<300) tableHeight = 300;
 
-
-    let table = new Tabulator("#" + elementId, {
-        height:300, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
+    table = new Tabulator("#" + elementId, {
+        autoResize:true,
+        height:tableHeight, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
         data:jdata, //assign data to table
         layout:"fitColumns", //fit columns to width of table (optional)
         headerFilterPlaceholder:"...",
@@ -207,6 +213,11 @@ function drawCharts() {
     drawStackedChart(window.overviewData.namespaceSummary, 'chart3');
     drawTable(window.overviewData.checks, 'data-table');
 
+    window.onresize = function(event) {
+        if(table){
+            table.redraw(true);
+        }
+    };
 }
 
 

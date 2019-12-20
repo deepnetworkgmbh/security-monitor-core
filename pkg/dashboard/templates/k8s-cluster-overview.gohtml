@@ -28,12 +28,12 @@
           <text x="18" y="20.35" class="percentage">{{ .Cluster.Score }}%</text>
         </svg>
       </div>
-      <div style="flex:1;padding-left:10px;flex-grow: 2;">
+      <div class="info-tab">
         <h4>Name: {{ .Cluster.Name }}</h4>
         <h4>Grade: {{ .Cluster.Grade }}</h4>
         <h4>Score: {{ .Cluster.Score }}%</h4>
       </div>
-      <div style="flex:1;flex-grow: 2;">
+      <div class="info-tab">
         <h4>Kubernetes Version: {{ .Cluster.Version }}</h4>
         <h4>Nodes: {{ .Cluster.Nodes }}</h4>
         <h4>Namespaces: {{ .Cluster.Namespaces }}</h4>
