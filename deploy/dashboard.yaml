@@ -87,7 +87,7 @@ spec:
         - security-monitor
         - --config
         - /opt/app/config.yaml
-        image: 'deepnetwork/security-monitor:0.1.0'
+        image: 'deepnetwork/security-monitor:0.2.0'
         imagePullPolicy: 'Always'
         name: dashboard
         ports:
