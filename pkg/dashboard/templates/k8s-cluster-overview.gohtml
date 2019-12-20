@@ -20,7 +20,8 @@
 
 <div class="main-content">
   <div class="card details">
-    <div style="border-radius:5px;border:solid 1px #ddd;display: flex;flex-direction: row;">
+    <h2>Cluster Overview</h2>
+    <div class="segment" style="display: flex;flex-direction: row;">
       <div style="flex:1;flex-grow: 1;display: flex;align-items: center;justify-content: center;">
         <svg viewBox="0 0 36 36" class="circular-chart green">
           <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
@@ -40,7 +41,7 @@
         <h4>Pods: {{ .Cluster.Pods }}</h4>
       </div>
     </div>
-    <div style="border-radius:5px;border:solid 1px #ddd;margin-top:10px;display: flex;flex-direction: row;height:280px;align-content: space-around">
+    <div class="segment" style="display: flex;flex-direction: row;height:280px;align-content: space-around">
       <div style="flex:1;width: 29%;">
         <div style="margin-left: 10px;">
           <div class="chart-title">by categories</div>
@@ -60,9 +61,7 @@
         </div>
       </div>
     </div>
-    <div style="border-radius:5px;border:solid 1px #ddd;margin-top:10px;" id="data-table">
-
-    </div>
+    <div class="segment" id="data-table"></div>
   </div>
 </div>
 </body>

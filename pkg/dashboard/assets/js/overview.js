@@ -22,8 +22,8 @@ function setupChart() {
     let data = google.visualization.arrayToDataTable(jdata);
     let options = {
         titlePosition: 'none',
-        width: 500,
-        height: 360,
+        width: 400,
+        height: 250,
         slices: {
             0: {color: sevcolors[0]},
             1: {color: sevcolors[1]},
@@ -31,9 +31,9 @@ function setupChart() {
             3: {color: sevcolors[3]}
         },
         pieHole: 0.5,
-        chartArea: {'width': '100%', 'height': '70%'},
+        chartArea: {'width': '100%', 'height': '80%'},
         legend: {
-            position: 'top',
+            position: 'bottom',
             alignment: 'center',
             textStyle: {
                 fontSize: 9

@@ -11,10 +11,13 @@
 
 <div class="main-content">
   <div class="card details">
-    <h3 style="float:right;" class="image-result-{{ .ScanResult }}"> {{ .ScanResult }} </h3>
-    <h1 class="image-name">
-       {{ .ImageTag }}
-    </h1>
+      <div class="segment">
+        <div style="border-bottom: solid 1px #ddd;background-color: #eee;">
+            <h3 style="float:right;font-size:20px;margin-top:-10px;" class="image-result-{{ .ScanResult }}"> {{ .ScanResult }} </h3>
+            <h1 class="image-name" style="margin-left: 15px;" >
+                {{ .ImageTag }}
+            </h1>
+        </div>
 
       {{ if (eq .ScanResult "Failed") }}
         <h3> Image vulnerabilities scan failed</h3>
@@ -91,6 +94,7 @@
             </ul>
           {{ end }}
       {{ end }}
+      </div>
   </div>
 </div>
 </body>
