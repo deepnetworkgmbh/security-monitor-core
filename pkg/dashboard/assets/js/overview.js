@@ -44,7 +44,7 @@ function setupChart() {
     let chart = new google.visualization.PieChart(document.getElementById('chart'));
     chart.draw(data, options);
 
-    console.log(`[] chart created`);
+    //console.log(`[] chart created`);
 }
 
 
@@ -169,10 +169,11 @@ function setListOfItemsByGroup(filter) {
         for (let j = 0; j < resultGroup.images.length; j++) {
             const rowText = resultGroup.images[j].rowText;
             const longImageName = resultGroup.images[j].image;
-            const shortImageName = shortenImageName(longImageName);
+            let shortImageName = shortenImageName(longImageName);
             let link = '';
 
             sublist += '<li>';
+
             sublist += ' <div style="float:right;">' + rowText + '</div>';
             if (rowText === 'No Issues') {
                 namespaceCounters.passing += 1;
@@ -203,6 +204,11 @@ function setListOfItemsByGroup(filter) {
                 link += ' </span>';
                 link += '</a>';
             }
+
+            if (filter && filter.length > 1) {
+                shortImageName = shortImageName.replace(filter, '<span class="highlight">' + filter + '</span>');
+            }
+
             sublist += shortImageName;
             sublist += link;
             sublist += '</li>';
@@ -213,7 +219,17 @@ function setListOfItemsByGroup(filter) {
         results[i].severityBarData = generateGroupSeverityData(window.counters);
         results[i].barId = 'bar' + i;
 
-        if (filter && filter.length > 1 && resultGroup.title.indexOf(filter) === -1) continue;
+        if (filter) {
+            let hasFilter = _.some(results[i].images, function (item) {
+                console.log('item.image =>', item.image);
+                return item.image.indexOf(filter) !== -1;
+            });
+            if (filter
+                && filter.length > 1
+                && resultGroup.title.indexOf(filter) === -1
+                && !hasFilter
+            ) continue;
+        }
 
         let imagehtml = '<div>';
         imagehtml += getBar(i, namespaceCounters);
@@ -240,9 +256,6 @@ function setListOfItemsByGroup(filter) {
         $("#results").append(imagehtml);
     }
 
-    console.log(`-------`);
-    console.log(results);
-    console.log(`-------`);
 }
 
 function search(box) {
@@ -293,8 +306,8 @@ function generateGroupSeverityData(counters) {
     for (let i = 0; i < slist.length; i++) {
         severitySum += counters[slist[i]]
     }
-    console.log('[] severity sum is ' + severitySum);
-    ;
+    //console.log('[] severity sum is ' + severitySum);
+
     for (let i = 0; i < slist.length; i++) {
         if (counters[slist[i]] > 0) {
             const ratio = ((counters[slist[i]]) / severitySum);

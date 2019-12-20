@@ -13,6 +13,7 @@ type Check struct {
     GroupName        string      `json:"group"`
     ResourceCategory string      `json:"category"`
     ResourceFullName string      `json:"resourceName"`
+    Description      string      `json:"description"`
     Result           CheckResult `json:"result"`
 }
 

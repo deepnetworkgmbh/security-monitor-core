@@ -23,7 +23,7 @@
       <div class="main-content">
   <div class="card details">
     <h2>Cluster Overview</h2>
-    <div class="segment" style="display: flex;flex-direction: row;">
+    <div class="segment" style="display: flex;flex-direction: row;justify-content: space-between;">
       <div style="flex:1;flex-grow: 1;display: flex;align-items: center;justify-content: center;">
         <svg viewBox="0 0 36 36" class="circular-chart green">
           <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
@@ -32,9 +32,9 @@
         </svg>
       </div>
       <div class="info-tab">
-        <h4>Name: {{ .Cluster.Name }}</h4>
-        <h4>Grade: {{ .Cluster.Grade }}</h4>
-        <h4>Score: {{ .Cluster.Score }}%</h4>
+        <h4 style="font-size:21px;line-height:28px;">Name: {{ .Cluster.Name }}</h4>
+        <h4 style="font-size:21px;line-height:28px;">Grade: {{ .Cluster.Grade }}</h4>
+        <h4 style="font-size:21px;line-height:28px;">Score: {{ .Cluster.Score }}%</h4>
       </div>
       <div class="info-tab">
         <h4>Kubernetes Version: {{ .Cluster.Version }}</h4>

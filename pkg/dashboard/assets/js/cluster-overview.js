@@ -150,28 +150,30 @@ function drawTable(jdata, elementId) {
             return;
         },
         columns:[ //Define Table Columns
-            /*{
-                title: 'row',
-                width: 40,
-                formatter: function(cell){
-                    rownum++;
-                    return rownum;
-                },
-            },*/
-            {   title:"Group", field:"group", width:105, align:'center',
+            {   title:"Group", field:"group", width:100, align:'center',
                 headerFilter:"select", headerFilterParams:{values:true },
                 formatter:function(cell){
                     return cell.getValue().replace('polaris.', '').replace('trivy.', '');
                 },
             },
-            {   title:"Category", field:"category", width:100, align:'center',
+            {   title:"Category", field:"category", width:95, align:'center',
                 headerFilter:"select", headerFilterParams:{values:true }
             },
             {   title:"Check Id", field:"id", width:200, align:'left',
-                headerFilter:"select", headerFilterParams:{values:true }
+                headerFilter:"select", headerFilterParams:{values:true}, formatter: function (cell) {
+
+                    const value = cell.getValue();
+                    const desc = cell.getData().description;
+                    if(desc){
+                        return value + '<i class="far fa-question-circle tipicon"></i>' ;
+                    }
+                    return value;
+
+
+                }
             },
             {   title:"Resource Name", field:"resourceName", headerFilter:"input" },
-            {   title: "Result", field: "result", width: 80, align: 'center',
+            {   title: "Result", field: "result", width: 70, align: 'center',
                 headerFilter:"select", headerFilterParams:{values:true },
                 formatter: function (cell, formatterParams) {
                     const val = cell.getValue();
@@ -179,7 +181,7 @@ function drawTable(jdata, elementId) {
                 }
             },
             {
-                title: "", width: 46, formatter: function () {
+                title: "", width: 42, formatter: function () {
                     return '<button class="testbutton" onclick="openContextmenu(event)">...</button>';
                 }
             }
