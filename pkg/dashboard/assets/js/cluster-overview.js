@@ -156,7 +156,7 @@ function drawTable(jdata, elementId) {
                     return cell.getValue().replace('polaris.', '').replace('trivy.', '');
                 },
             },
-            {   title:"Category", field:"category", width:95, align:'center',
+            {   title:"Category", field:"category", width:98, align:'center',
                 headerFilter:"select", headerFilterParams:{values:true }
             },
             {   title:"Check Id", field:"id", width:200, align:'left',
@@ -173,7 +173,7 @@ function drawTable(jdata, elementId) {
                 }
             },
             {   title:"Resource Name", field:"resourceName", headerFilter:"input" },
-            {   title: "Result", field: "result", width: 70, align: 'center',
+            {   title: "Result", field: "result", width: 77, align: 'center',
                 headerFilter:"select", headerFilterParams:{values:true },
                 formatter: function (cell, formatterParams) {
                     const val = cell.getValue();
