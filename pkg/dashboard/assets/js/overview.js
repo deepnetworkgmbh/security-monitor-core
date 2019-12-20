@@ -3,182 +3,65 @@ let counters = {
     "MEDIUM": 0,
     "NOISSUES": 0,
     "NODATA": 0
-}
+};
+let groupColors = ['gray', 'red', 'orange', 'green'];
 const severityList = ["CRITICAL", "MEDIUM", "NOISSUES", "NODATA"];
 
 function setupChart() {
 
-    // set the dimensions and margins of the graph
-    const width = 500
-    const height = 360
-    const margin = 10
-    const radius = Math.min(width, height) / 2 - margin
+    let jdata = [
+        ['Severity', 'Number']
+    ];
+    let sevcolors = [];
+    for(let i=0;i<window.auditData.ImagesGroups.length;i++){
+        let group = window.auditData.ImagesGroups[i];
+        jdata.push([group.Title, group.Count]);
+        sevcolors.push(getSeverityColor(group.Title));
+    }
 
-    let svg = d3.select("#chart")
-        .append("svg")
-        .attr("width", width)
-        .attr("height", height)
-        .append("g")
-        .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+    let data = google.visualization.arrayToDataTable(jdata);
+    let options = {
+        titlePosition: 'none',
+        width: 500,
+        height: 360,
+        slices: {
+            0: {color: sevcolors[0]},
+            1: {color: sevcolors[1]},
+            2: {color: sevcolors[2]},
+            3: {color: sevcolors[3]}
+        },
+        pieHole: 0.5,
+        chartArea: {'width': '100%', 'height': '70%'},
+        legend: {
+            position: 'top',
+            alignment: 'center',
+            textStyle: {
+                fontSize: 9
+            }
+        },
+    };
 
-    // Create dummy data
-    // example: var data = {a: 9, b: 1, c: 14}
-    let data = setData();
-    window.severities = data;
-
-    // set the color scale
-    let color = d3.scaleOrdinal()
-        .domain(["CRITICAL", "MEDIUM", "NOISSUES", "NODATA"])
-        .range(["#a11f4c" , "#f26c21" , "#8BD2DC", "#777777"]);
-
-    // Compute the position of each group on the pie:
-    let  pie = d3.pie()
-        .sort(null) // Do not sort group by size
-        .value(function (d) { return d.value; })
-
-    let data_ready = pie(d3.entries(data));
-
-    // The arc generator
-    let arc = d3.arc()
-        .innerRadius(radius * 0.5)         // This is the size of the donut hole
-        .outerRadius(radius * 0.8)
-
-    // Another arc that won't be drawn. Just for labels positioning
-    let outerArc = d3.arc()
-        .innerRadius(radius * 0.9)
-        .outerRadius(radius * 0.9)
-
-    // Build the pie chart: Basically, each part of the pie is a path that we build using the arc function.
-    svg
-        .selectAll('allSlices')
-        .data(data_ready)
-        .enter()
-        .append('path')
-        .attr('d', arc)
-        .attr('fill', function (d) {
-            return (color(d.data.key))
-        })
-        .attr("stroke", "white")
-        .style("stroke-width", "2px")
-
-    // Add the polylines between chart and labels:
-    svg
-        .selectAll('allPolylines')
-        .data(data_ready)
-        .enter()
-        .append('polyline')
-        .attr("stroke", "black")
-        .style("fill", "none")
-        .attr("stroke-width", 1)
-        .attr('points', function (d) {
-            var posA = arc.centroid(d) // line insertion in the slice
-            var posB = outerArc.centroid(d) // line break: we use the other arc generator that has been built only for that
-            var posC = outerArc.centroid(d); // Label position = almost the same as posB
-            var midangle = d.startAngle + (d.endAngle - d.startAngle) / 2 // we need the angle to see if the X position will be at the extreme right or extreme left
-            posC[0] = radius * 0.90 * (midangle < Math.PI ? 1 : -1); // multiply by 1 or -1 to put it on the right or on the left
-            return [posA, posB, posC]
-        });
-
-
-    // Add the polylines between chart and labels:
-    svg
-        .selectAll('allLabels')
-        .data(data_ready)
-        .enter()
-        .append('text')
-        .style('font-size', '10px')
-        .text(function (d) {
-            // console.log(d.data.key);
-            return d.data.key
-        })
-        .attr('transform', function (d) {
-            var pos = outerArc.centroid(d);
-            var midangle = d.startAngle + (d.endAngle - d.startAngle) / 2
-            pos[0] = radius * 0.95 * (midangle < Math.PI ? .99 : -.99);
-            pos[1] += 3;
-            return 'translate(' + pos + ')';
-        })
-        .style('text-anchor', function (d) {
-            var midangle = d.startAngle + (d.endAngle - d.startAngle) / 2
-            return (midangle < Math.PI ? 'start' : 'end')
-        })
+    let chart = new google.visualization.PieChart(document.getElementById('chart'));
+    chart.draw(data, options);
 
     console.log(`[] chart created`);
 }
 
-function setupOverviewBar(resultGroup) {
-
-    console.log(resultGroup.barId);
-    console.log(resultGroup.severityBarData.domain);
-    console.log(resultGroup.severityBarData.range);
-
-    let formatPercent = d3.format(".0%"),
-        formatNumber = d3.format(".0f");
-
-    let threshold = d3.scaleThreshold()
-        .domain(resultGroup.severityBarData.domain)
-        .range(resultGroup.severityBarData.range);
-
-    let x = d3.scaleLinear()
-        .domain([0, 1])
-        .range([0, 200]);
-
-    let xAxis = d3.axisBottom(x)
-        .tickSize(13)
-        .tickValues(threshold.domain())
-        .tickFormat(function(d) { return d === 0.5 ? formatPercent(d) : formatNumber(100 * d); });
-
-    let g = d3.select("#" + resultGroup.barId)
-        .append("svg")
-        .call(xAxis);
-
-    g.select(".domain")
-        .remove();
-
-    g.selectAll("rect")
-        .data(threshold.range().map(function(color) {
-            var d = threshold.invertExtent(color);
-            if (d[0] == null) d[0] = x.domain()[0];
-            if (d[1] == null) d[1] = x.domain()[1];
-            return d;
-        }))
-        .enter().insert("rect", ".tick")
-        .attr("height", 8)
-        .attr("x", function(d) { return x(d[0]); })
-        .attr("width", function(d) { return x(d[1]) - x(d[0]); })
-        .attr("fill", function(d) { return threshold(d[0]); });
-
-    g.append("text")
-        .attr("fill", "#000")
-        .attr("font-weight", "bold")
-        .attr("text-anchor", "start")
-        .attr("y", -6)
-        .text("Population density");
-}
-function setData() {
-    let data = {};
-
-    for (let key in window.auditData.ImagesGroups) {
-        let severity = window.auditData.ImagesGroups[key].Title
-        let count = window.auditData.ImagesGroups[key].Count
-        data[severity] = count;
-    }
-
-    return data;
-}
 
 function createAttributeGroup() {
     const defaultGroupBy = 'namespace';
 
     let groupBy = [];
-    for(let i=0;i<window.auditData.Results.length;i++) {
+    for (let i = 0; i < window.auditData.Results.length; i++) {
         const image = window.auditData.Results[i];
 
-        for(let j=0;j<image.attributes.length;j++) {
+        for (let j = 0; j < image.attributes.length; j++) {
             const attribute = image.attributes[j];
             const chunk = attribute.split(':');
             const name = chunk[0];
-            const attributeIndex = _.findIndex(groupBy,function(o) { return o.name == name; });
+            const attributeIndex = _.findIndex(groupBy, function (o) {
+                return o.name == name;
+            });
 
             if (attributeIndex === -1) {
                 groupBy.push({
@@ -186,15 +69,15 @@ function createAttributeGroup() {
                     count: 1
                 });
                 //console.log('adding attribute :' + name);
-            }else{
-                groupBy[attributeIndex].count +=1;
+            } else {
+                groupBy[attributeIndex].count += 1;
             }
         }
     }
     groupBy = _.sortBy(groupBy, 'count').reverse();
 
     $("#group-by-dropdown").empty();
-    for(let i=0;i<groupBy.length;i++){
+    for (let i = 0; i < groupBy.length; i++) {
         const optionName = groupBy[i].name + ' (' + groupBy[i].count + ')';
         const optionValue = groupBy[i].name;
         $("#group-by-dropdown").append(new Option(optionName, optionValue));
@@ -209,13 +92,13 @@ function setListOfItemsByGroup(filter) {
     let results = [];
 
     // scan images
-    for(let i=0;i<window.auditData.Results.length;i++) {
+    for (let i = 0; i < window.auditData.Results.length; i++) {
         const image = window.auditData.Results[i];
 
-        for(let j=0;j<image.attributes.length;j++) {
+        for (let j = 0; j < image.attributes.length; j++) {
             const attribute = image.attributes[j];
 
-            if(attribute.split(':')[0] === groupBy) {
+            if (attribute.split(':')[0] === groupBy) {
 
                 const attributeValue = attribute.split(':')[1];
 
@@ -231,7 +114,7 @@ function setListOfItemsByGroup(filter) {
                         images: [image],
                         order: 255
                     });
-                }else {
+                } else {
                     // add existing image under group
                     results[imageIndex].images.push(image);
                 }
@@ -242,7 +125,7 @@ function setListOfItemsByGroup(filter) {
     results = _.sortBy(results, 'name');
 
     // sort result groups by severity
-    for(let i=0;i<results.length;i++) {
+    for (let i = 0; i < results.length; i++) {
         const resultGroup = results[i];
         window.counters = {
             "CRITICAL": 0,
@@ -250,31 +133,31 @@ function setListOfItemsByGroup(filter) {
             "NOISSUES": 0,
             "NODATA": 0
         }
-        for(let j=0;j<resultGroup.images.length;j++) {
+        for (let j = 0; j < resultGroup.images.length; j++) {
             const rowText = parseSeverities(resultGroup.images[j]);
             resultGroup.images[j].rowText = rowText;
-            if(rowText === 'No Issues') {
+            if (rowText === 'No Issues') {
                 resultGroup.images[j].order = 1;
-                if(resultGroup.order>1) resultGroup.order=1;
-            }else if (rowText === 'No Data') {
+                if (resultGroup.order > 1) resultGroup.order = 1;
+            } else if (rowText === 'No Data') {
                 resultGroup.images[j].order = 2;
-                if(resultGroup.order>2) resultGroup.order=2;
-            }else {
+                if (resultGroup.order > 2) resultGroup.order = 2;
+            } else {
                 resultGroup.images[j].order = 0;
-                if(resultGroup.order>0) resultGroup.order=0;
+                if (resultGroup.order > 0) resultGroup.order = 0;
             }
         }
     }
 
     results = _.sortBy(results, 'order');
 
-    for(let i=0;i<results.length;i++) {
+    for (let i = 0; i < results.length; i++) {
         results[i].images = _.sortBy(results[i].images, 'order');
     }
 
     // render images
     $("#results").empty();
-    for(let i=0;i<results.length;i++){
+    for (let i = 0; i < results.length; i++) {
         const resultGroup = results[i];
         let namespaceCounters = {
             failing: 0,
@@ -283,7 +166,7 @@ function setListOfItemsByGroup(filter) {
         }
 
         let sublist = `<ul>`;
-        for(let j=0;j<resultGroup.images.length;j++) {
+        for (let j = 0; j < resultGroup.images.length; j++) {
             const rowText = resultGroup.images[j].rowText;
             const longImageName = resultGroup.images[j].image;
             const shortImageName = shortenImageName(longImageName);
@@ -291,18 +174,18 @@ function setListOfItemsByGroup(filter) {
 
             sublist += '<li>';
             sublist += ' <div style="float:right;">' + rowText + '</div>';
-            if(rowText === 'No Issues') {
-                namespaceCounters.passing +=1;
+            if (rowText === 'No Issues') {
+                namespaceCounters.passing += 1;
                 sublist += '<i class="fas fa-check noissues-icon"></i>';
 
-                link += '<a href="/image/' +  longImageName + '" class="more-info">';
+                link += '<a href="/image/' + longImageName + '" class="more-info">';
                 link += ' <span class="tool" data-tip="Click to see detailed image analysis">';
                 link += '  <i class="far fa-question-circle"></i>';
                 link += ' </span>';
                 link += '</a>';
 
-            }else if (rowText === 'No Data') {
-                namespaceCounters.nodata +=1;
+            } else if (rowText === 'No Data') {
+                namespaceCounters.nodata += 1;
                 sublist += '<i class="fas fa-times nodata-icon"></i>';
 
                 link += '<a class="more-info">';
@@ -310,11 +193,11 @@ function setListOfItemsByGroup(filter) {
                 link += '  <i class="far fa-question-circle"></i>';
                 link += ' </span>';
                 link += '</a>';
-            }else {
-                namespaceCounters.failing +=1;
+            } else {
+                namespaceCounters.failing += 1;
                 sublist += '<i class="fas fa-exclamation-triangle warning-icon"></i>';
 
-                link += '<a href="/image/' +  longImageName + '" class="more-info">';
+                link += '<a href="/image/' + longImageName + '" class="more-info">';
                 link += ' <span class="tool" data-tip="Click to see detailed image analysis">';
                 link += '  <i class="far fa-question-circle"></i>';
                 link += ' </span>';
@@ -330,7 +213,7 @@ function setListOfItemsByGroup(filter) {
         results[i].severityBarData = generateGroupSeverityData(window.counters);
         results[i].barId = 'bar' + i;
 
-        if(filter && filter.length > 1 && resultGroup.title.indexOf(filter) === -1) continue;
+        if (filter && filter.length > 1 && resultGroup.title.indexOf(filter) === -1) continue;
 
         let imagehtml = '<div>';
         imagehtml += getBar(i, namespaceCounters);
@@ -339,11 +222,11 @@ function setListOfItemsByGroup(filter) {
         imagehtml += ' <li>';
         imagehtml += '  <input type="checkbox" id="target' + i + '" checked/>';
         imagehtml += '  <label for="target' + i + '">';
-        if(filter && filter.length > 1){
+        if (filter && filter.length > 1) {
             imagehtml += resultGroup.title.replace(filter, '<span class="highlight">' + filter + '</span>');
-            imagehtml += '(' + resultGroup.images.length  + ')';
-        }else {
-            imagehtml += resultGroup.title +  '(' + resultGroup.images.length  + ')';
+            imagehtml += '(' + resultGroup.images.length + ')';
+        } else {
+            imagehtml += resultGroup.title + '(' + resultGroup.images.length + ')';
         }
         imagehtml += '  </label>';
 
@@ -357,9 +240,6 @@ function setListOfItemsByGroup(filter) {
         $("#results").append(imagehtml);
     }
 
-    for(let i=0;i<results.length;i++) {
-        setupOverviewBar(results[i]);
-    }
     console.log(`-------`);
     console.log(results);
     console.log(`-------`);
@@ -371,17 +251,17 @@ function search(box) {
     setListOfItemsByGroup(value);
 }
 
-function  shortenImageName(name) {
+function shortenImageName(name) {
     let chunks = name.split('/');
-    return chunks[chunks.length-1]
+    return chunks[chunks.length - 1]
 }
 
-function  getSeveritFromImage(image, severity) {
+function getSeveritFromImage(image, severity) {
     let severitIndex = _.findIndex(image.counters, function (o) {
         return o.severity === severity;
     });
 
-    if (severitIndex === -1 ){
+    if (severitIndex === -1) {
         return 0;
     }
     return image.counters[severitIndex].count;
@@ -389,10 +269,14 @@ function  getSeveritFromImage(image, severity) {
 
 function getSeverityColor(severity) {
     switch (severity) {
-        case 'CRITICAL': return "#a11f4c";
-        case 'MEDIUM': return "#f26c21";
-        case 'NOISSUES': return "#8BD2DC";
-        case 'NODATA': return "#777777";
+        case 'CRITICAL':
+            return groupColors[1];
+        case 'MEDIUM':
+            return groupColors[2];
+        case 'NOISSUES':
+            return groupColors[3];
+        case 'NODATA':
+            return groupColors[0];
     }
 }
 
@@ -406,14 +290,14 @@ function generateGroupSeverityData(counters) {
     let slist = severityList.reverse();
     // calculate sum severity for group
     let severitySum = 0;
-    for(let i=0;i<slist.length;i++){
+    for (let i = 0; i < slist.length; i++) {
         severitySum += counters[slist[i]]
     }
     console.log('[] severity sum is ' + severitySum);
-;
-    for(let i=0;i<slist.length;i++){
-        if(counters[slist[i]] >0){
-            const ratio = ((counters[slist[i]])  / severitySum);
+    ;
+    for (let i = 0; i < slist.length; i++) {
+        if (counters[slist[i]] > 0) {
+            const ratio = ((counters[slist[i]]) / severitySum);
             data.domain.push(ratio.toFixed(2));
             data.range.push(getSeverityColor(slist[i]));
         }
@@ -424,7 +308,7 @@ function generateGroupSeverityData(counters) {
 function parseSeverities(image) {
 
     //console.log(image);
-    const severity_critical =  getSeveritFromImage(image, "CRITICAL");
+    const severity_critical = getSeveritFromImage(image, "CRITICAL");
     const severity_high = getSeveritFromImage(image, "HIGH");
     const severity_medium = getSeveritFromImage(image, "MEDIUM");
     const severity_low = getSeveritFromImage(image, "LOW");
@@ -433,7 +317,7 @@ function parseSeverities(image) {
     window.counters["MEDIUM"] += severity_medium;
     window.counters["NOISSUES"] += severity_low;
 
-    if(image.scanResult === "Failed") {
+    if (image.scanResult === "Failed") {
         window.counters["NODATA"] += 1;
         return "No Data";
     }
@@ -444,20 +328,21 @@ function parseSeverities(image) {
     }
 
     let results = [];
-    if(severity_critical>0) {
+    if (severity_critical > 0) {
         results.push("<b>" + severity_critical + "</b> Critical");
     }
-    if(severity_high>0) {
+    if (severity_high > 0) {
         results.push("<b>" + severity_high + "</b> High");
     }
-    if(severity_medium>0) {
+    if (severity_medium > 0) {
         results.push("<b>" + severity_medium + "</b> Medium");
     }
-    if(severity_low>0) {
+    if (severity_low > 0) {
         results.push("<b>" + severity_low + "</b> Low");
     }
     return results.join(", ")
 }
+
 let bars = [];
 
 function getBar(id, namespaceCounters) {
@@ -476,8 +361,8 @@ function getBar(id, namespaceCounters) {
     let barHtml = '<div class="status-bar">';
     barHtml += ' <div class="status">';
     barHtml += '  <div class="failing">';
-    barHtml += '   <div class="nodata" style="width: '+ nodataWidth +'px;">';
-    barHtml += '    <div class="passing" style="width: '+ passingWidth +'px;"></div>';
+    barHtml += '   <div class="nodata" style="width: ' + nodataWidth + 'px;">';
+    barHtml += '    <div class="passing" style="width: ' + passingWidth + 'px;"></div>';
     barHtml += '   </div>';
     barHtml += '  </div>';
     barHtml += ' </div>';
@@ -486,6 +371,11 @@ function getBar(id, namespaceCounters) {
     return barHtml;
 }
 
+function pageLoaded() {
+    google.load("visualization", "1", {packages: ["corechart"]});
+    google.charts.load('current', {'packages':['corechart']});
+    google.charts.setOnLoadCallback(setupOverview);
+}
 
 function setupOverview() {
     setupChart();

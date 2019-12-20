@@ -8,13 +8,12 @@
     {{ template "head" . }}
     <link rel="stylesheet" href="static/css/scan-details.css">
     <link rel="stylesheet" href="static/css/tooltip.css">
-    <script src="https://d3js.org/d3.v4.js"></script>
-    <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript" src="static/js/underscore.js"></script>
     <script type="text/javascript" src="static/js/overview.js"></script>
 </head>
 
-<body onload="setupOverview()">
+<body onload="pageLoaded()">
 {{ template "navbar" }}
 
     <div class="main-content">

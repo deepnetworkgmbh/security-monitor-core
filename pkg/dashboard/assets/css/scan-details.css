@@ -320,7 +320,7 @@ a.more-info:hover {
 }
 
 .status .passing {
-  background-color: #8BD2DC;
+  background-color: green;
   float: left;
 }
 
@@ -330,7 +330,7 @@ a.more-info:hover {
 }
 
 .status .failing {
-  background-color: #a11f4c;
+  background-color: red;
   width: 100%;
 }
 
