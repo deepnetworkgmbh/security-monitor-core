@@ -7,11 +7,19 @@
 </head>
 
 <body>
-  {{ template "navbar" . }}
-  <div class="main-content">
-    <div class="card details">
-      {{ template "details" . }}
+  <div id="page-container">
+    <div id="content-wrap">
+      {{ template "navbar" . }}
+
+      <div class="main-content">
+        <div class="card details">
+          {{ template "details" . }}
+        </div>
+      </div>
+
     </div>
+
+    {{ template "footer" . }}
   </div>
 </body>
 </html>

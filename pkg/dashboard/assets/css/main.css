@@ -5,6 +5,15 @@ body {
   line-height: 1.3em;
 }
 
+#page-container {
+  position: relative;
+  min-height: 100vh;
+}
+
+#content-wrap {
+  padding-bottom: 2.5rem;    /* Footer height */
+}
+
 nav, .main-content {
   width: 960px;
   margin: auto;
@@ -22,9 +31,11 @@ nav, .main-content {
 }
 
 .footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 2.5rem;
   text-align: center;
-  padding-top: 10px;
-  padding-bottom: 30px;
 }
 
 .footer a {
@@ -34,17 +45,6 @@ nav, .main-content {
 
 .footer a:hover {
   text-decoration: underline;
-}
-
-.exemption-alert {
-  margin-top: 15px;
-  padding: 15px;
-  border: 1px solid #f26c21;
-  border-radius: 2px;
-}
-.exemption-alert .fa-exclamation {
-  margin-right: 10px;
-  color: #f26c21;
 }
 
 .image-result-Succeeded {

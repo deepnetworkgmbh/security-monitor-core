@@ -14,10 +14,12 @@
 </head>
 
 <body onload="pageLoaded()">
-{{ template "navbar" }}
+    <div id="page-container">
+        <div id="content-wrap">
+            {{ template "navbar" }}
 
-    <div class="main-content">
-        <div class="card details">
+            <div class="main-content">
+            <div class="card details">
             <h2>Container Images Overview</h2>
             <div class="segment" style="display: flex;flex-direction: row;">
                 <div style="padding: 10px;" id="chart"></div>
@@ -51,8 +53,11 @@
                 <div style="margin-top:25px;padding:10px;">
                     <div id="results"></div>
                 </div>
+                </div>
             </div>
         </div>
+        </div>
+        {{ template "footer" . }}
     </div>
 </body>
 </html>

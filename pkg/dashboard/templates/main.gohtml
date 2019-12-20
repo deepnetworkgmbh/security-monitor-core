@@ -9,11 +9,15 @@
 </head>
 
 <body>
-  {{ template "navbar" . }}
-  <div class="main-content">
-    {{ template "preamble" . }}
-    {{ template "dashboard" . }}
+  <div id="page-container">
+    <div id="content-wrap">
+      {{ template "navbar" . }}
+      <div class="main-content">
+        {{ template "preamble" . }}
+        {{ template "dashboard" . }}
+      </div>
+    </div>
+    {{ template "footer" . }}
   </div>
-  {{ template "footer" . }}
 </body>
 </html>

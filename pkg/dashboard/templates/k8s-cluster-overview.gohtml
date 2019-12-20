@@ -16,9 +16,11 @@
 </head>
 
 <body onload="pageLoaded()">
-{{ template "navbar" }}
+  <div id="page-container">
+    <div id="content-wrap">
+      {{ template "navbar" }}
 
-<div class="main-content">
+      <div class="main-content">
   <div class="card details">
     <h2>Cluster Overview</h2>
     <div class="segment" style="display: flex;flex-direction: row;">
@@ -64,5 +66,8 @@
     <div class="segment" id="data-table"></div>
   </div>
 </div>
+    </div>
+    {{ template "footer" . }}
+  </div>
 </body>
 </html>

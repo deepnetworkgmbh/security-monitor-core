@@ -6,9 +6,18 @@
 </head>
 
 <body >
-  {{ template "navbar" . }}
-  <div class="main-content block items-center mx-auto">
-    <p>The page is not found</p>
+  <div id="page-container">
+
+    <div id="content-wrap">
+      {{ template "navbar" . }}
+
+      <div class="main-content flex items-center mx-auto m-10">
+        <p class="font-sans text-xl tracking-tight ml-10">The page is not found</p>
+      </div>
+
+    </div>
+
+    {{ template "footer" . }}
   </div>
 </body>
 </html>
